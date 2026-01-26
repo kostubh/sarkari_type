@@ -16,17 +16,19 @@ export function DuringTestScreen() {
   const isTimeless = config.timeMode === 'timeless';
   
   const handleFinishTest = () => {
-    // Calculate final stats before finishing
+    // If elapsedSeconds is 0 (immediate finish), fallback to a small value to avoid division by zero
+    const finalElapsed = Math.max(0.1, elapsedSeconds);
+
     const finalStats = calculateStats(
       testState.typedText,
       testState.referenceText,
-      testState.elapsedSeconds || elapsedSeconds
+      finalElapsed
     );
 
     dispatch({
       type: 'UPDATE_STATS',
       payload: {
-        elapsedSeconds,
+        elapsedSeconds: finalElapsed, // Save final elapsed time to state
         wpm: finalStats.wpm,
         rawWpm: finalStats.rawWpm,
         accuracy: finalStats.accuracy,
@@ -52,17 +54,21 @@ export function DuringTestScreen() {
   // Update stats periodically
   useEffect(() => {
     updateIntervalRef.current = setInterval(() => {
+      // Only update if we have actually started (startTime > 0)
       if (testState.phase === 'during' && !testState.isPaused && testState.startTime > 0) {
+        // Prevent 0 division in live stats
+        const currentElapsed = Math.max(0.1, elapsedSeconds);
+        
         const stats = calculateStats(
           testState.typedText,
           testState.referenceText,
-          elapsedSeconds
+          currentElapsed
         );
 
         dispatch({
           type: 'UPDATE_STATS',
           payload: {
-            elapsedSeconds,
+            elapsedSeconds: currentElapsed,
             wpm: stats.wpm,
             rawWpm: stats.rawWpm,
             accuracy: stats.accuracy,
@@ -75,12 +81,21 @@ export function DuringTestScreen() {
           },
         });
       }
-    }, 200); // More frequent updates for smoother UI (200ms)
+    }, 200);
 
     return () => {
       if (updateIntervalRef.current) clearInterval(updateIntervalRef.current);
     };
-  }, [testState.phase, testState.isPaused, testState.startTime, testState.typedText, testState.referenceText, elapsedSeconds, calculateStats, dispatch]);
+  }, [
+    testState.phase, 
+    testState.isPaused, 
+    testState.startTime, 
+    testState.typedText, 
+    // Remove testState.referenceText from dep array to avoid re-renders if it doesn't change
+    elapsedSeconds, 
+    calculateStats, 
+    dispatch
+  ]);
 
   // Focus input on mount
   useEffect(() => {
