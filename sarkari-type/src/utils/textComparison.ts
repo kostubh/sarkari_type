@@ -84,6 +84,11 @@ export function compareWords(
 }
 
 function categorizeError(typed: string, expected: string): 'spelling' | 'punctuation' | 'case' {
+  // Space/whitespace error - treat as punctuation
+  if (typed === ' ' || expected === ' ') {
+    return 'punctuation';
+  }
+
   // Case error: same letter, different case
   if (typed.toLowerCase() === expected.toLowerCase()) {
     return 'case';
