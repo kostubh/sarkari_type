@@ -28,12 +28,28 @@ export function calculateRawWpm(
   return Math.round(raw * 100) / 100;
 }
 
+/**
+ * Calculate typing accuracy including all error types
+ * 
+ * Accuracy = correct characters / total characters
+ * Total = correct + incorrect + missed + extra
+ * 
+ * This properly accounts for:
+ * - Substitutions (incorrect chars)
+ * - Omissions (missed chars from reference)
+ * - Insertions (extra chars not in reference)
+ */
 export function calculateAccuracy(
   correctChars: number,
-  incorrectChars: number
+  incorrectChars: number,
+  missedChars: number = 0,
+  extraChars: number = 0
 ): number {
-  const total = correctChars + incorrectChars;
+  // Total includes all character-level operations
+  const total = correctChars + incorrectChars + missedChars + extraChars;
+  
   if (total === 0) return 100;
+  
   const accuracy = (correctChars / total) * 100;
   return Math.round(accuracy * 100) / 100;
 }
