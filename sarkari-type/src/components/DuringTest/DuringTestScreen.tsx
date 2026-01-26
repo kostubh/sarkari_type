@@ -17,7 +17,7 @@ export function DuringTestScreen() {
   const { elapsedSeconds, remainingSeconds } = useTimer({
     duration: config.duration,
     isTimeless,
-    isActive: testState.phase === 'during' && !testState.isPaused,
+    isActive: testState.phase === 'during' && !testState.isPaused && testState.startTime > 0,
     onTimeUp: () => handleFinishTest(),
   });
 

@@ -60,7 +60,7 @@ function testReducer(state: CombinedState, action: TestAction): CombinedState {
           phase: 'during',
           referenceText: action.payload,
           referenceWords: action.payload.split(/\s+/).filter((w) => w.length > 0),
-          startTime: Date.now(),
+          startTime: 0, // Will be set on first keystroke
           typedText: '',
           typedWords: [],
           correctChars: 0,
@@ -79,6 +79,8 @@ function testReducer(state: CombinedState, action: TestAction): CombinedState {
         testState: {
           ...state.testState,
           typedText: state.testState.typedText + action.payload,
+          // Set startTime on first character only
+          startTime: state.testState.startTime === 0 ? Date.now() : state.testState.startTime,
         },
       };
 
