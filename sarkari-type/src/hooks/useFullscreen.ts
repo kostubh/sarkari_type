@@ -3,7 +3,11 @@ import { useEffect, useCallback, RefObject } from 'react';
 /**
  * Hook to manage fullscreen mode using browser Fullscreen API
  */
-export function useFullscreen(elementRef: RefObject<HTMLElement>, isFullscreen: boolean) {
+export function useFullscreen(
+  elementRef: RefObject<HTMLElement>,
+  isFullscreen: boolean,
+  onFullscreenChange?: (isFullscreen: boolean) => void
+) {
   const enterFullscreen = useCallback(async () => {
     const element = elementRef.current;
     if (!element) return;
@@ -62,6 +66,35 @@ export function useFullscreen(elementRef: RefObject<HTMLElement>, isFullscreen: 
       }
     }
   }, [isFullscreen, enterFullscreen, exitFullscreen]);
+
+  // Listen for fullscreen changes (e.g., user pressing ESC)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!
+        (document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement);
+      
+      // Notify parent component if fullscreen state changed
+      if (onFullscreenChange && isCurrentlyFullscreen !== isFullscreen) {
+        onFullscreenChange(isCurrentlyFullscreen);
+      }
+    };
+
+    // Listen to all browser-specific fullscreen change events
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, [isFullscreen, onFullscreenChange]);
 
   return { enterFullscreen, exitFullscreen };
 }
