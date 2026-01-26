@@ -3,6 +3,7 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches: [ main, master ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -23,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install dependencies
         working-directory: ./sarkari-type
@@ -31,6 +32,8 @@ jobs:
 
       - name: Build project
         working-directory: ./sarkari-type
+        env:
+          VITE_PERPLEXITY_API_KEY: ${{ secrets.VITE_PERPLEXITY_API_KEY }}
         run: npm run build
 
       - name: Upload artifact
