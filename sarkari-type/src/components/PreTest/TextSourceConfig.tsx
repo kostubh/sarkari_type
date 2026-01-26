@@ -4,6 +4,7 @@ import {
   generateAIText,
   fetchWikipediaText,
   getAITopics,
+  getWikipediaTopics,
   getGovernmentDocTypes,
   generateGovernmentText,
   generateCustomPromptText,
@@ -43,7 +44,7 @@ export function TextSourceConfig() {
     setLoading(true);
     setError(null);
     try {
-      const text = await fetchWikipediaText(config.wordCount);
+      const text = await fetchWikipediaText(config.wordCount, config.wikipediaTopic);
       dispatch({
         type: 'SET_CONFIG',
         payload: { customText: text },
@@ -111,7 +112,7 @@ export function TextSourceConfig() {
       <div className="mb-4">
         <label className="block text-sm font-medium mb-2">Choose Text Source</label>
         <div className="flex gap-2 flex-wrap">
-          {['ai', 'wikipedia', 'custom'].map((source) => (
+          {['wikipedia', 'ai', 'custom'].map((source) => (
             <button
               key={source}
               onClick={() => dispatch({ type: 'SET_CONFIG', payload: { textSource: source as 'ai' | 'wikipedia' | 'custom' } })}
@@ -142,6 +143,40 @@ export function TextSourceConfig() {
               Click the generate button again to create new text with {config.wordCount} words.
             </p>
           </div>
+        </div>
+      )}
+
+      {config.textSource === 'wikipedia' && (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium mb-2">Select Topic Category</label>
+            <select
+              value={config.wikipediaTopic}
+              onChange={(e) =>
+                dispatch({ type: 'SET_CONFIG', payload: { wikipediaTopic: e.target.value } })
+              }
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            >
+              {getWikipediaTopics().map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              {config.wikipediaTopic === 'Random Article' 
+                ? 'Will fetch a completely random Wikipedia article'
+                : `Will fetch a random article from the ${config.wikipediaTopic} category`
+              }
+            </p>
+          </div>
+          <button
+            onClick={handleFetchWikipedia}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
+          >
+            {loading ? 'Fetching...' : `Fetch Article (${config.wordCount} words)`}
+          </button>
         </div>
       )}
 
@@ -262,16 +297,6 @@ export function TextSourceConfig() {
             </>
           )}
         </div>
-      )}
-
-      {config.textSource === 'wikipedia' && (
-        <button
-          onClick={handleFetchWikipedia}
-          disabled={loading}
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
-        >
-          {loading ? 'Fetching...' : `Fetch Random Article (${config.wordCount} words)`}
-        </button>
       )}
 
       {config.textSource === 'custom' && (
