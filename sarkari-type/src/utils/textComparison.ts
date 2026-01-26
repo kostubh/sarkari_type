@@ -6,7 +6,7 @@
  * Categorizes errors: spelling, punctuation, case, missing, extra
  */
 
-import { ErrorDetail, WordComparisonResult } from '../types';
+import { ErrorDetail, WordComparisonResult, WordResult } from '../types';
 
 export function isCharCorrect(
   inputChar: string,
@@ -113,7 +113,7 @@ export function compareTexts(typedText: string, referenceText: string) {
   const typedWords = splitIntoWords(typedText);
   const referenceWords = splitIntoWords(referenceText);
 
-  const wordResults = [];
+  const wordResults: WordResult[] = [];
   let totalCorrectChars = 0;
   let totalIncorrectChars = 0;
   let totalMissedChars = 0;
@@ -127,17 +127,19 @@ export function compareTexts(typedText: string, referenceText: string) {
 
     const comparison = compareWords(typed, reference);
 
+    const status: 'correct' | 'incorrect' | 'missing' | 'extra' =
+      typed === reference
+        ? 'correct'
+        : typed === ''
+          ? 'missing'
+          : reference === ''
+            ? 'extra'
+            : 'incorrect';
+
     wordResults.push({
       reference,
       typed,
-      status:
-        typed === reference
-          ? 'correct'
-          : typed === ''
-            ? 'missing'
-            : reference === ''
-              ? 'extra'
-              : 'incorrect',
+      status,
       errors: comparison.errors,
     });
 

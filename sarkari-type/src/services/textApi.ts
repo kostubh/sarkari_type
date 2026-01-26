@@ -24,7 +24,7 @@ const AI_TOPICS = [
  * Generate AI text using Perplexity Sonar API
  * This calls the API directly for now (in production, use Cloudflare Worker)
  */
-export async function generateAIText(topic: string, wordCount: number = 100): Promise<string> {
+export async function generateAIText(topic: string): Promise<string> {
   try {
     // For now, return sample text during development
     // In production, this would call the Cloudflare Worker

@@ -8,6 +8,7 @@ import { useCallback } from 'react';
 import { compareTexts } from '../utils/textComparison';
 import { calculateWpm, calculateAccuracy, calculateRawWpm } from '../utils/wpmCalculation';
 import { calculateFinalScore, ScoringOptions } from '../utils/scoring';
+import { WordResult } from '../types';
 
 export interface TypingStatsResult {
   wpm: number;
@@ -18,7 +19,7 @@ export interface TypingStatsResult {
   missedChars: number;
   extraChars: number;
   finalScore: number;
-  wordResults: any[];
+  wordResults: WordResult[];
 }
 
 export function useTypingStats() {

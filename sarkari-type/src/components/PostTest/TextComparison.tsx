@@ -18,20 +18,6 @@ export function TextComparison({ wordResults }: TextComparisonProps) {
     }
   };
 
-  const getCharClass = (errorType?: string): string => {
-    switch (errorType) {
-      case 'spelling':
-        return 'char-error';
-      case 'case':
-        return 'char-case-error';
-      case 'punctuation':
-        return 'char-punctuation-error';
-      case 'missing':
-        return 'char-missing';
-      default:
-        return 'char-correct';
-    }
-  };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">

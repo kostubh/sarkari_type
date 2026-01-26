@@ -11,10 +11,10 @@ export function DuringTestScreen() {
   const { config, testState, dispatch } = useTest();
   const { calculateStats } = useTypingStats();
   const inputRef = useRef<HTMLDivElement>(null);
-  const updateIntervalRef = useRef<NodeJS.Timeout>();
+  const updateIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
   const isTimeless = config.timeMode === 'timeless';
-  const { elapsedSeconds, remainingSeconds, timeUp } = useTimer({
+  const { elapsedSeconds, remainingSeconds } = useTimer({
     duration: config.duration,
     isTimeless,
     isActive: testState.phase === 'during' && !testState.isPaused,

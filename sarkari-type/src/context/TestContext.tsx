@@ -5,7 +5,7 @@
  * Provides test configuration, test state, and dispatch actions
  */
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { TestConfig, TestState, DEFAULT_CONFIG, DEFAULT_TEST_STATE } from '../types';
 
 interface TestContextType {
