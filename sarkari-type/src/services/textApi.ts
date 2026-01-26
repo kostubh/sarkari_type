@@ -37,7 +37,7 @@ const GOVERNMENT_DOC_TYPES = [
  * Generate AI text using Perplexity Sonar API
  * This calls the API directly for now (in production, use Cloudflare Worker)
  */
-export async function generateAIText(topic: string): Promise<string> {
+export async function generateAIText(topic: string, wordCount: number = 100): Promise<string> {
   try {
     // For now, return sample text during development
     // In production, this would call the Cloudflare Worker
@@ -54,8 +54,15 @@ export async function generateAIText(topic: string): Promise<string> {
         'Psychology is the scientific study of human behavior and mental processes. Psychologists investigate topics including perception, cognition, emotion, personality, and social behavior. Different schools of thought such as behaviorism, cognitive psychology, and humanistic psychology offer various perspectives. Research methods include experiments, observations, surveys, and case studies. Psychology applications span clinical treatment, education, workplace performance, and personal development. Understanding psychology helps explain why people think, feel, and behave as they do.',
     };
 
-    // Return sample text for the topic, or a default message
-    return sampleTexts[topic] || sampleTexts['Technology'];
+    // Get sample text for the topic, or a default message
+    const fullText = sampleTexts[topic] || sampleTexts['Technology'];
+    
+    // Truncate to requested word count
+    const words = fullText.split(/\s+/);
+    if (words.length > wordCount) {
+      return words.slice(0, wordCount).join(' ');
+    }
+    return fullText;
   } catch (error) {
     console.error('Failed to generate AI text:', error);
     throw new Error('Could not generate text. Please try again.');
@@ -63,9 +70,9 @@ export async function generateAIText(topic: string): Promise<string> {
 }
 
 /**
- * Fetch random Wikipedia article
+ * Fetch random Wikipedia article and truncate to word count
  */
-export async function fetchWikipediaText(searchTerm?: string): Promise<string> {
+export async function fetchWikipediaText(wordCount: number = 100, searchTerm?: string): Promise<string> {
   try {
     const endpoint = searchTerm
       ? `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`
@@ -78,7 +85,14 @@ export async function fetchWikipediaText(searchTerm?: string): Promise<string> {
     }
 
     const data = await response.json();
-    return data.extract || 'Could not fetch article content.';
+    const fullText = data.extract || 'Could not fetch article content.';
+    
+    // Truncate to requested word count
+    const words = fullText.split(/\s+/);
+    if (words.length > wordCount) {
+      return words.slice(0, wordCount).join(' ');
+    }
+    return fullText;
   } catch (error) {
     console.error('Failed to fetch Wikipedia text:', error);
     throw new Error('Could not fetch Wikipedia article. Please try again.');
