@@ -1,8 +1,8 @@
 /**
  * Text Comparison Module
  *
- * Implements sequence alignment algorithm (similar to git diff)
- * to properly match words even when some are missing or extra
+ * Implements sequence alignment algorithm with fuzzy matching
+ * to properly detect character-level errors even in misspelled words
  */
 
 import { ErrorDetail, WordComparisonResult, WordResult } from '../types';
@@ -111,21 +111,71 @@ export function splitIntoWords(text: string): string[] {
 }
 
 /**
- * Compute Longest Common Subsequence (LCS) length matrix
- * Used for sequence alignment similar to git diff
+ * Calculate similarity score between two words using Levenshtein distance
+ * Returns value between 0 (completely different) and 1 (identical)
  */
-function computeLCS(arr1: string[], arr2: string[]): number[][] {
+function wordSimilarity(word1: string, word2: string): number {
+  if (word1 === word2) return 1.0;
+  if (word1.length === 0 || word2.length === 0) return 0.0;
+
+  // Use normalized Levenshtein distance
+  const maxLen = Math.max(word1.length, word2.length);
+  const distance = levenshteinDistance(word1, word2);
+  return 1 - distance / maxLen;
+}
+
+/**
+ * Compute Levenshtein distance between two strings
+ */
+function levenshteinDistance(str1: string, str2: string): number {
+  const m = str1.length;
+  const n = str2.length;
+  const dp: number[][] = Array(m + 1)
+    .fill(0)
+    .map(() => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (str1[i - 1] === str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,    // deletion
+          dp[i][j - 1] + 1,    // insertion
+          dp[i - 1][j - 1] + 1 // substitution
+        );
+      }
+    }
+  }
+
+  return dp[m][n];
+}
+
+/**
+ * Compute similarity matrix and LCS with fuzzy matching
+ * Uses similarity threshold to align similar (but not identical) words
+ */
+function computeFuzzyLCS(arr1: string[], arr2: string[]): number[][] {
   const m = arr1.length;
   const n = arr2.length;
+  const SIMILARITY_THRESHOLD = 0.5; // Words must be at least 50% similar to align
+
   const dp: number[][] = Array(m + 1)
     .fill(0)
     .map(() => Array(n + 1).fill(0));
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (arr1[i - 1] === arr2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
+      const similarity = wordSimilarity(arr1[i - 1], arr2[j - 1]);
+      
+      if (similarity >= SIMILARITY_THRESHOLD) {
+        // Similar words - align them (weighted by similarity)
+        dp[i][j] = dp[i - 1][j - 1] + similarity;
       } else {
+        // Not similar enough - treat as different
         dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
       }
     }
@@ -135,24 +185,32 @@ function computeLCS(arr1: string[], arr2: string[]): number[][] {
 }
 
 /**
- * Align two word arrays using LCS algorithm
- * Returns aligned pairs with null for missing/extra words
+ * Align two word arrays using fuzzy LCS algorithm
+ * Returns aligned pairs, matching similar words even if not identical
  */
 function alignWords(typedWords: string[], referenceWords: string[]): Array<{ typed: string | null; reference: string | null }> {
-  const dp = computeLCS(typedWords, referenceWords);
+  const dp = computeFuzzyLCS(typedWords, referenceWords);
   const aligned: Array<{ typed: string | null; reference: string | null }> = [];
+  const SIMILARITY_THRESHOLD = 0.5;
 
   let i = typedWords.length;
   let j = referenceWords.length;
 
   // Backtrack to find alignment
   while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && typedWords[i - 1] === referenceWords[j - 1]) {
-      // Match found
-      aligned.unshift({ typed: typedWords[i - 1], reference: referenceWords[j - 1] });
-      i--;
-      j--;
-    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+    if (i > 0 && j > 0) {
+      const similarity = wordSimilarity(typedWords[i - 1], referenceWords[j - 1]);
+      
+      if (similarity >= SIMILARITY_THRESHOLD) {
+        // Words are similar enough to align
+        aligned.unshift({ typed: typedWords[i - 1], reference: referenceWords[j - 1] });
+        i--;
+        j--;
+        continue;
+      }
+    }
+    
+    if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
       // Missing word (in reference but not typed)
       aligned.unshift({ typed: null, reference: referenceWords[j - 1] });
       j--;
@@ -167,14 +225,14 @@ function alignWords(typedWords: string[], referenceWords: string[]): Array<{ typ
 }
 
 /**
- * Compare entire texts using sequence alignment algorithm
- * This properly handles missing/extra words without cascading errors
+ * Compare entire texts using fuzzy sequence alignment algorithm
+ * This properly handles missing/extra words AND character-level errors
  */
 export function compareTexts(typedText: string, referenceText: string) {
   const typedWords = splitIntoWords(typedText);
   const referenceWords = splitIntoWords(referenceText);
 
-  // Use LCS-based alignment to match words properly
+  // Use fuzzy LCS-based alignment to match similar words
   const alignedPairs = alignWords(typedWords, referenceWords);
 
   const wordResults: WordResult[] = [];
@@ -225,7 +283,7 @@ export function compareTexts(typedText: string, referenceText: string) {
         errors: [],
       };
     } else {
-      // Incorrect spelling (words aligned but different)
+      // Similar words aligned - compare character by character
       status = 'incorrect';
       comparison = compareWords(typed, reference);
     }
