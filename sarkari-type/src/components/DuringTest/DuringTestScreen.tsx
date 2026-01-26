@@ -13,6 +13,10 @@ export function DuringTestScreen() {
   const inputRef = useRef<HTMLDivElement>(null);
   const updateIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
+  // Use refs to track latest values for the interval callback
+  const testStateRef = useRef(testState);
+  const timerRef = useRef({ elapsedSeconds: 0 });
+
   const isTimeless = config.timeMode === 'timeless';
   
   const handleFinishTest = () => {
@@ -51,8 +55,13 @@ export function DuringTestScreen() {
     onTimeUp: handleFinishTest,
   });
 
+  // Update refs with latest values on every render
+  useEffect(() => {
+    testStateRef.current = testState;
+    timerRef.current = timer;
+  });
+
   // Update stats periodically during active typing
-  // This effect should only recreate when test phase changes, not on every keystroke
   useEffect(() => {
     // Clear any existing interval
     if (updateIntervalRef.current) {
@@ -62,14 +71,18 @@ export function DuringTestScreen() {
     // Only set up interval if test is in progress
     if (testState.phase === 'during') {
       updateIntervalRef.current = setInterval(() => {
+        // Read latest values from refs
+        const currentTestState = testStateRef.current;
+        const currentTimer = timerRef.current;
+
         // Only update if we have actually started (startTime > 0) and not paused
-        if (testState.startTime > 0 && !testState.isPaused) {
+        if (currentTestState.startTime > 0 && !currentTestState.isPaused) {
           // Use actual elapsed time, with minimal fallback for initial render
-          const currentElapsed = timer.elapsedSeconds > 0 ? timer.elapsedSeconds : 0.01;
+          const currentElapsed = currentTimer.elapsedSeconds > 0 ? currentTimer.elapsedSeconds : 0.01;
           
           const stats = calculateStats(
-            testState.typedText,
-            testState.referenceText,
+            currentTestState.typedText,
+            currentTestState.referenceText,
             currentElapsed
           );
 
@@ -99,9 +112,8 @@ export function DuringTestScreen() {
     };
   }, [
     testState.phase,
-    // We intentionally do NOT include testState.typedText, testState.isPaused, 
-    // testState.startTime, or timer.elapsedSeconds to prevent constant recreation
-    // The interval will read the current values from closure on each tick
+    calculateStats,
+    dispatch,
   ]);
 
   // Focus input on mount
