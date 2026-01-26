@@ -17,7 +17,7 @@ export function DuringTestScreen() {
   
   const handleFinishTest = () => {
     // If elapsedSeconds is 0 (immediate finish), fallback to a small value to avoid division by zero
-    const finalElapsed = Math.max(0.1, elapsedSeconds);
+    const finalElapsed = Math.max(0.1, timer.elapsedSeconds);
 
     const finalStats = calculateStats(
       testState.typedText,
@@ -28,7 +28,7 @@ export function DuringTestScreen() {
     dispatch({
       type: 'UPDATE_STATS',
       payload: {
-        elapsedSeconds: finalElapsed, // Save final elapsed time to state
+        elapsedSeconds: finalElapsed,
         wpm: finalStats.wpm,
         rawWpm: finalStats.rawWpm,
         accuracy: finalStats.accuracy,
@@ -44,12 +44,19 @@ export function DuringTestScreen() {
     dispatch({ type: 'FINISH_TEST' });
   };
   
-  const { elapsedSeconds, remainingSeconds } = useTimer({
+  const timer = useTimer({
     duration: config.duration,
     isTimeless,
     isActive: testState.phase === 'during' && !testState.isPaused && testState.startTime > 0,
     onTimeUp: handleFinishTest,
   });
+
+  // Explicitly reset timer when test state resets (start time becomes 0)
+  useEffect(() => {
+    if (testState.startTime === 0) {
+      timer.reset();
+    }
+  }, [testState.startTime, timer.reset]);
 
   // Update stats periodically
   useEffect(() => {
@@ -57,7 +64,7 @@ export function DuringTestScreen() {
       // Only update if we have actually started (startTime > 0)
       if (testState.phase === 'during' && !testState.isPaused && testState.startTime > 0) {
         // Prevent 0 division in live stats
-        const currentElapsed = Math.max(0.1, elapsedSeconds);
+        const currentElapsed = Math.max(0.1, timer.elapsedSeconds);
         
         const stats = calculateStats(
           testState.typedText,
@@ -91,8 +98,7 @@ export function DuringTestScreen() {
     testState.isPaused, 
     testState.startTime, 
     testState.typedText, 
-    // Remove testState.referenceText from dep array to avoid re-renders if it doesn't change
-    elapsedSeconds, 
+    timer.elapsedSeconds, // Use timer object directly
     calculateStats, 
     dispatch
   ]);
@@ -125,7 +131,7 @@ export function DuringTestScreen() {
         wpm={testState.wpm} 
         accuracy={testState.accuracy} 
         mistakes={testState.incorrectChars} 
-        timer={remainingSeconds} 
+        timer={timer.remainingSeconds} 
         isTimeless={isTimeless} 
       />
 
