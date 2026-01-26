@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useTest } from '../../context/TestContext';
 import { useTimer } from '../../hooks/useTimer';
 import { useTypingStats } from '../../hooks/useTypingStats';
@@ -21,8 +21,16 @@ export function DuringTestScreen() {
 
   const isTimeless = config.timeMode === 'timeless';
   
+  // Handle fullscreen state changes (e.g., ESC key press)
+  const handleFullscreenChange = useCallback((isFullscreen: boolean) => {
+    if (!isFullscreen && testState.isFullscreen) {
+      // User exited fullscreen (e.g., pressed ESC) - sync state
+      dispatch({ type: 'TOGGLE_FULLSCREEN' });
+    }
+  }, [testState.isFullscreen, dispatch]);
+  
   // Initialize fullscreen hook
-  useFullscreen(containerRef, testState.isFullscreen);
+  useFullscreen(containerRef, testState.isFullscreen, handleFullscreenChange);
   
   const handleFinishTest = () => {
     // Use the actual elapsed time from timer, with minimal fallback only for edge cases
