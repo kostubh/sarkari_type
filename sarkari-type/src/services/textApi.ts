@@ -159,64 +159,95 @@ const GOVERNMENT_DOC_TYPES = [
   'RTI Response',
 ];
 
-// Multiple sample text variations for each topic
+// Fallback sample text variations (used when API is unavailable)
 const SAMPLE_TEXT_VARIATIONS: { [key: string]: string[] } = {
   Technology: [
     'Technology has transformed every aspect of modern life. From communication to commerce, entertainment to education, digital innovations continue to shape how we live, work, and interact with one another. Artificial intelligence, cloud computing, and blockchain are revolutionizing industries. The internet connects billions of people worldwide, enabling instant access to information and global collaboration. As technology evolves, challenges around privacy, security, and digital equity become increasingly important. The future promises even more remarkable advances in quantum computing, biotechnology, and renewable energy solutions. Smart devices integrate seamlessly into daily routines, automating tasks and enhancing productivity. Virtual reality and augmented reality create immersive experiences for learning and entertainment. Cybersecurity remains critical as digital threats grow more sophisticated. Innovation drives economic growth and improves quality of life globally.',
-    'Digital transformation reshapes industries at unprecedented speed. Mobile computing enables work and communication from anywhere. Software applications automate complex business processes efficiently. Machine learning algorithms analyze vast datasets to extract insights. Internet of Things devices collect real-time environmental data. Renewable energy technologies reduce carbon footprints significantly. Biotechnology advances offer new medical treatments and therapies. Nanotechnology manipulates matter at atomic scales precisely. Robotics automates manufacturing and dangerous tasks safely. Space exploration technologies push boundaries of human achievement. Quantum computers solve problems beyond classical computing capabilities. Blockchain ensures transparent and secure digital transactions. Three-dimensional printing revolutionizes manufacturing and prototyping processes. Autonomous vehicles promise safer and efficient transportation systems. Wireless networks provide connectivity across urban and rural areas.',
-    'Computing power doubles approximately every two years historically. Smartphones contain more processing capability than early supercomputers. Cloud storage eliminates physical media for data retention. Social media platforms connect billions globally in real-time. Streaming services deliver entertainment content on-demand instantly. E-commerce platforms enable shopping from home conveniently. Digital currencies challenge traditional banking and finance systems. Wearable technology monitors health metrics throughout daily activities. Smart home systems control lighting, temperature, and security remotely. Drones perform tasks from delivery to aerial photography. Satellite technology enables global positioning and weather forecasting. Fiber optic cables transmit data at light speeds. Voice assistants respond to commands and answer questions. Biometric authentication secures devices with fingerprints or faces. Open-source software fosters collaborative development and innovation.',
   ],
   Science: [
-    'Science is the systematic study of the natural world through observation and experimentation. Scientific method involves forming hypotheses, conducting experiments, and analyzing results to understand fundamental principles. From physics and chemistry to biology and astronomy, science reveals the mysteries of existence. Recent discoveries in quantum mechanics, genetics, and neuroscience continue to expand human knowledge. Scientific research addresses pressing challenges like climate change, disease prevention, and sustainable energy. Collaboration between scientists worldwide accelerates innovation and breakthrough discoveries that benefit humanity. Laboratory experiments test theories under controlled conditions. Peer review ensures research quality and reliability. Data analysis employs statistical methods to draw valid conclusions. Scientific literacy empowers informed decision-making in society. Technology enables increasingly precise measurements and observations. Interdisciplinary approaches combine insights from multiple fields.',
-    'Physics explores fundamental forces governing the universe. Chemistry studies matter composition, properties, and transformations. Biology investigates living organisms and life processes. Astronomy examines celestial objects and cosmic phenomena. Geology analyzes Earth structure, composition, and history. Meteorology forecasts weather patterns and climate changes. Oceanography studies marine environments and ecosystems comprehensively. Ecology examines relationships between organisms and environments. Genetics decodes hereditary information in DNA molecules. Microbiology explores microscopic organisms affecting health and ecosystems. Neuroscience investigates brain structure and function thoroughly. Botany studies plant life, growth, and reproduction. Zoology examines animal behavior, physiology, and classification. Paleontology uncovers ancient life through fossil records. Environmental science addresses sustainability and conservation issues systematically.',
-    'Scientists use microscopes to observe tiny structures. Telescopes reveal distant galaxies and planetary systems. Particle accelerators probe subatomic matter at extreme energies. Spectrometers analyze chemical composition of substances accurately. Chromatography separates mixtures into individual components precisely. Centrifuges separate materials by density through rotation. Incubators maintain optimal conditions for biological growth. Petri dishes culture bacteria and cells under observation. Bunsen burners provide controlled heat for experiments. Beakers and flasks hold and mix chemical solutions. Pipettes measure and transfer precise liquid volumes. Thermometers monitor temperature changes during reactions. pH meters determine acidity or alkalinity levels. Balances weigh substances with high precision. Computers process experimental data and run simulations.',
+    'Science is the systematic study of the natural world through observation and experimentation. Scientific method involves forming hypotheses, conducting experiments, and analyzing results to understand fundamental principles. From physics and chemistry to biology and astronomy, science reveals the mysteries of existence. Recent discoveries in quantum mechanics, genetics, and neuroscience continue to expand human knowledge. Scientific research addresses pressing challenges like climate change, disease prevention, and sustainable energy. Collaboration between scientists worldwide accelerates innovation and breakthrough discoveries that benefit humanity.',
   ],
   History: [
-    'History is the study of past events and societies. It helps us understand how civilizations developed, cultures interacted, and societies evolved over time. Major historical periods include ancient civilizations, the Middle Ages, the Renaissance, and modern era. Historical analysis examines causes and consequences of significant events like revolutions, wars, and social movements. By studying history, we gain perspective on contemporary issues and appreciate human achievements and struggles. Archives, artifacts, and documents provide evidence for historical understanding. Historians interpret primary sources to reconstruct past events. Archaeological discoveries reveal information about ancient peoples and cultures. Historical patterns inform predictions about future trends. Understanding history promotes cultural awareness and tolerance. Different historiographical approaches offer varied interpretations of events. Oral histories preserve personal narratives and community memories.',
-    'Ancient civilizations emerged in river valleys globally. Mesopotamia developed cuneiform writing and complex irrigation. Egypt built pyramids and established pharaonic dynasties. Indus Valley civilization featured urban planning and trade. China invented paper, printing, and gunpowder technologies. Greece introduced democracy and philosophical thought systems. Rome created vast empire with advanced engineering. Byzantine Empire preserved classical knowledge through centuries. Islamic scholars advanced mathematics, astronomy, and medicine. Medieval Europe experienced feudalism and religious crusades. Renaissance sparked artistic and intellectual revival dramatically. Reformation challenged Catholic Church authority and practices. Age of Exploration connected continents through maritime routes. Enlightenment promoted reason, science, and individual rights. Industrial Revolution transformed production and urbanization patterns.',
-    'World War One reshaped global political boundaries. Treaty of Versailles imposed harsh penalties on Germany. Great Depression caused worldwide economic hardship severely. World War Two involved unprecedented destruction and casualties. Holocaust resulted in genocide of six million Jews. United Nations formed to promote international cooperation. Cold War divided world into communist and capitalist blocs. Decolonization movements ended European imperial rule globally. Space race demonstrated superpower technological capabilities. Civil rights movements fought racial discrimination and inequality. Vietnam War sparked anti-war protests and activism. Fall of Berlin Wall symbolized communism decline. Gulf War introduced televised modern warfare coverage. September eleventh attacks changed global security policies. Arab Spring revolutions challenged authoritarian Middle Eastern regimes.',
+    'History is the study of past events and societies. It helps us understand how civilizations developed, cultures interacted, and societies evolved over time. Major historical periods include ancient civilizations, the Middle Ages, the Renaissance, and modern era. Historical analysis examines causes and consequences of significant events like revolutions, wars, and social movements. By studying history, we gain perspective on contemporary issues and appreciate human achievements and struggles.',
   ],
 };
 
 /**
- * Generate AI text using sample variations (placeholder for actual AI API)
- * TODO: Replace with actual API call to Perplexity Sonar or other AI service
+ * Generate AI text using Perplexity Sonar API
  */
 export async function generateAIText(topic: string, wordCount: number = 100): Promise<string> {
+  const apiKey = import.meta.env.VITE_PERPLEXITY_API_KEY;
+  
+  // If no API key, use fallback samples
+  if (!apiKey || apiKey === 'your_api_key_here') {
+    console.warn('Perplexity API key not configured. Using sample text.');
+    return useFallbackText(topic, wordCount);
+  }
+
   try {
-    // TODO: In production, replace this with actual API call
-    // Example implementation:
-    /*
-    const response = await fetch('YOUR_CLOUDFLARE_WORKER_URL', {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
         model: 'sonar',
-        messages: [{
-          role: 'user',
-          content: `Write exactly ${wordCount} words about ${topic}. Be informative and engaging.`
-        }]
-      })
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that generates informative, well-written text for typing practice. Write in a clear, engaging style suitable for typing tests.'
+          },
+          {
+            role: 'user',
+            content: `Write exactly ${wordCount} words about ${topic}. Be informative and engaging. Do not include any preamble, title, or conclusion markers. Just provide the ${wordCount} words of content.`
+          }
+        ],
+        max_tokens: wordCount * 2, // Allow some buffer
+        temperature: 0.7,
+      }),
     });
-    const data = await response.json();
-    return data.choices[0].message.content;
-    */
-    
-    // For now, use sample variations with randomization
-    const variations = SAMPLE_TEXT_VARIATIONS[topic] || SAMPLE_TEXT_VARIATIONS['Technology'];
-    const randomIndex = Math.floor(Math.random() * variations.length);
-    const selectedText = variations[randomIndex];
-    
-    // Truncate to requested word count
-    const words = selectedText.split(/\s+/).filter(w => w.length > 0);
-    if (words.length > wordCount) {
-      return words.slice(0, wordCount).join(' ');
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Perplexity API error:', response.status, errorData);
+      throw new Error(`API request failed: ${response.status}`);
     }
-    return selectedText;
+
+    const data = await response.json();
+    const generatedText = data.choices?.[0]?.message?.content;
+
+    if (!generatedText) {
+      throw new Error('No content in API response');
+    }
+
+    // Clean and truncate to exact word count
+    const words = generatedText.trim().split(/\s+/).filter(w => w.length > 0);
+    const finalText = words.slice(0, wordCount).join(' ');
+    
+    return finalText;
+    
   } catch (error) {
     console.error('Failed to generate AI text:', error);
-    throw new Error('Could not generate text. Please try again.');
+    console.warn('Falling back to sample text');
+    return useFallbackText(topic, wordCount);
   }
+}
+
+/**
+ * Use fallback sample text when API is unavailable
+ */
+function useFallbackText(topic: string, wordCount: number): string {
+  const variations = SAMPLE_TEXT_VARIATIONS[topic] || SAMPLE_TEXT_VARIATIONS['Technology'];
+  const randomIndex = Math.floor(Math.random() * variations.length);
+  const selectedText = variations[randomIndex];
+  
+  // Truncate to requested word count
+  const words = selectedText.split(/\s+/).filter(w => w.length > 0);
+  if (words.length > wordCount) {
+    return words.slice(0, wordCount).join(' ');
+  }
+  return selectedText;
 }
 
 /**
@@ -352,14 +383,58 @@ export async function generateGovernmentText(docType: string, wordCount: number 
 
 /**
  * Generate text from custom prompt using AI
- * TODO: Implement actual AI API integration
  */
 export async function generateCustomPromptText(prompt: string, wordCount: number = 100): Promise<string> {
-  // TODO: In production, call AI API with custom prompt
-  // The API request should include: `${prompt}. Write exactly ${wordCount} words.`
+  const apiKey = import.meta.env.VITE_PERPLEXITY_API_KEY;
   
-  // For now, return a message indicating this feature needs API integration
-  return `Custom prompt generation would process: "${prompt}" and generate exactly ${wordCount} words. This feature requires AI API integration. For now, please use preset topics or paste your own text in the Custom text source option.`;
+  // If no API key, return message
+  if (!apiKey || apiKey === 'your_api_key_here') {
+    return `Custom prompt generation requires Perplexity API key. Please configure VITE_PERPLEXITY_API_KEY in your .env file. For now, please use preset topics or paste your own text in the Custom text source option.`;
+  }
+
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'sonar',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that generates text for typing practice based on user prompts.'
+          },
+          {
+            role: 'user',
+            content: `${prompt}. Write exactly ${wordCount} words. Do not include any preamble or conclusion markers.`
+          }
+        ],
+        max_tokens: wordCount * 2,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedText = data.choices?.[0]?.message?.content;
+
+    if (!generatedText) {
+      throw new Error('No content in API response');
+    }
+
+    // Clean and truncate
+    const words = generatedText.trim().split(/\s+/).filter(w => w.length > 0);
+    return words.slice(0, wordCount).join(' ');
+    
+  } catch (error) {
+    console.error('Failed to generate custom prompt text:', error);
+    throw new Error('Could not generate text from custom prompt. Please try again.');
+  }
 }
 
 /**
