@@ -18,6 +18,15 @@ export function TextComparison({ wordResults }: TextComparisonProps) {
     }
   };
 
+  // Handle empty or undefined wordResults
+  if (!wordResults || wordResults.length === 0) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold mb-4">📋 Text Comparison</h3>
+        <p className="text-gray-500 text-center py-8">No comparison data available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
