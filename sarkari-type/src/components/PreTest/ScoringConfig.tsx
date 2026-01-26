@@ -111,15 +111,20 @@ export function ScoringConfig() {
             </select>
           </div>
 
-          <div>
-            <label className="flex items-center gap-2 text-sm font-medium">
+          <div className="border-t pt-3">
+            <label className="flex items-start gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={config.displaySettings.showGuidePointer}
                 onChange={(e) => updateDisplay('showGuidePointer', e.target.checked)}
-                className="w-4 h-4"
+                className="w-4 h-4 mt-0.5"
               />
-              Show Guide Pointer
+              <div className="flex-1">
+                <span className="text-sm font-medium">Highlight Current Position</span>
+                <p className="text-xs text-gray-500 mt-1">
+                  Show color highlighting on reference text based on your typing cursor position
+                </p>
+              </div>
             </label>
           </div>
         </div>
