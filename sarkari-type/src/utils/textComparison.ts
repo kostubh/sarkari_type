@@ -1,9 +1,8 @@
 /**
  * Text Comparison Module
  *
- * Adapted from MonkeyType's validation.ts
- * Compares typed text against reference text
- * Categorizes errors: spelling, punctuation, case, missing, extra
+ * Implements sequence alignment algorithm (similar to git diff)
+ * to properly match words even when some are missing or extra
  */
 
 import { ErrorDetail, WordComparisonResult, WordResult } from '../types';
@@ -112,11 +111,71 @@ export function splitIntoWords(text: string): string[] {
 }
 
 /**
- * Compare entire texts and return detailed results
+ * Compute Longest Common Subsequence (LCS) length matrix
+ * Used for sequence alignment similar to git diff
+ */
+function computeLCS(arr1: string[], arr2: string[]): number[][] {
+  const m = arr1.length;
+  const n = arr2.length;
+  const dp: number[][] = Array(m + 1)
+    .fill(0)
+    .map(() => Array(n + 1).fill(0));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (arr1[i - 1] === arr2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  return dp;
+}
+
+/**
+ * Align two word arrays using LCS algorithm
+ * Returns aligned pairs with null for missing/extra words
+ */
+function alignWords(typedWords: string[], referenceWords: string[]): Array<{ typed: string | null; reference: string | null }> {
+  const dp = computeLCS(typedWords, referenceWords);
+  const aligned: Array<{ typed: string | null; reference: string | null }> = [];
+
+  let i = typedWords.length;
+  let j = referenceWords.length;
+
+  // Backtrack to find alignment
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && typedWords[i - 1] === referenceWords[j - 1]) {
+      // Match found
+      aligned.unshift({ typed: typedWords[i - 1], reference: referenceWords[j - 1] });
+      i--;
+      j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      // Missing word (in reference but not typed)
+      aligned.unshift({ typed: null, reference: referenceWords[j - 1] });
+      j--;
+    } else if (i > 0) {
+      // Extra word (typed but not in reference)
+      aligned.unshift({ typed: typedWords[i - 1], reference: null });
+      i--;
+    }
+  }
+
+  return aligned;
+}
+
+/**
+ * Compare entire texts using sequence alignment algorithm
+ * This properly handles missing/extra words without cascading errors
  */
 export function compareTexts(typedText: string, referenceText: string) {
   const typedWords = splitIntoWords(typedText);
   const referenceWords = splitIntoWords(referenceText);
+
+  // Use LCS-based alignment to match words properly
+  const alignedPairs = alignWords(typedWords, referenceWords);
 
   const wordResults: WordResult[] = [];
   let totalCorrectChars = 0;
@@ -124,22 +183,52 @@ export function compareTexts(typedText: string, referenceText: string) {
   let totalMissedChars = 0;
   let totalExtraChars = 0;
 
-  // Compare word by word
-  const maxWords = Math.max(typedWords.length, referenceWords.length);
-  for (let i = 0; i < maxWords; i++) {
-    const typed = typedWords[i] || '';
-    const reference = referenceWords[i] || '';
+  // Process aligned word pairs
+  for (const pair of alignedPairs) {
+    const typed = pair.typed || '';
+    const reference = pair.reference || '';
 
-    const comparison = compareWords(typed, reference);
+    let status: 'correct' | 'incorrect' | 'missing' | 'extra';
+    let comparison: WordComparisonResult;
 
-    const status: 'correct' | 'incorrect' | 'missing' | 'extra' =
-      typed === reference
-        ? 'correct'
-        : typed === ''
-          ? 'missing'
-          : reference === ''
-            ? 'extra'
-            : 'incorrect';
+    if (pair.typed === null) {
+      // Missing word (in reference but not typed)
+      status = 'missing';
+      comparison = {
+        isCorrect: false,
+        correctChars: 0,
+        incorrectChars: 0,
+        extraChars: 0,
+        missedChars: reference.length,
+        errors: [],
+      };
+    } else if (pair.reference === null) {
+      // Extra word (typed but not in reference)
+      status = 'extra';
+      comparison = {
+        isCorrect: false,
+        correctChars: 0,
+        incorrectChars: 0,
+        extraChars: typed.length,
+        missedChars: 0,
+        errors: [],
+      };
+    } else if (typed === reference) {
+      // Exact match
+      status = 'correct';
+      comparison = {
+        isCorrect: true,
+        correctChars: typed.length,
+        incorrectChars: 0,
+        extraChars: 0,
+        missedChars: 0,
+        errors: [],
+      };
+    } else {
+      // Incorrect spelling (words aligned but different)
+      status = 'incorrect';
+      comparison = compareWords(typed, reference);
+    }
 
     wordResults.push({
       reference,
