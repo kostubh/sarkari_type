@@ -14,17 +14,45 @@ export function DuringTestScreen() {
   const updateIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
   const isTimeless = config.timeMode === 'timeless';
+  
+  const handleFinishTest = () => {
+    // Calculate final stats before finishing
+    const finalStats = calculateStats(
+      testState.typedText,
+      testState.referenceText,
+      testState.elapsedSeconds || elapsedSeconds
+    );
+
+    dispatch({
+      type: 'UPDATE_STATS',
+      payload: {
+        elapsedSeconds,
+        wpm: finalStats.wpm,
+        rawWpm: finalStats.rawWpm,
+        accuracy: finalStats.accuracy,
+        correctChars: finalStats.correctChars,
+        incorrectChars: finalStats.incorrectChars,
+        missedChars: finalStats.missedChars,
+        extraChars: finalStats.extraChars,
+        finalScore: finalStats.finalScore,
+        wordResults: finalStats.wordResults,
+      },
+    });
+
+    dispatch({ type: 'FINISH_TEST' });
+  };
+  
   const { elapsedSeconds, remainingSeconds } = useTimer({
     duration: config.duration,
     isTimeless,
     isActive: testState.phase === 'during' && !testState.isPaused && testState.startTime > 0,
-    onTimeUp: () => handleFinishTest(),
+    onTimeUp: handleFinishTest,
   });
 
   // Update stats periodically
   useEffect(() => {
     updateIntervalRef.current = setInterval(() => {
-      if (testState.phase === 'during' && !testState.isPaused) {
+      if (testState.phase === 'during' && !testState.isPaused && testState.startTime > 0) {
         const stats = calculateStats(
           testState.typedText,
           testState.referenceText,
@@ -47,44 +75,17 @@ export function DuringTestScreen() {
           },
         });
       }
-    }, 1000);
+    }, 200); // More frequent updates for smoother UI (200ms)
 
     return () => {
       if (updateIntervalRef.current) clearInterval(updateIntervalRef.current);
     };
-  }, [testState, elapsedSeconds, calculateStats, dispatch, config]);
+  }, [testState.phase, testState.isPaused, testState.startTime, testState.typedText, testState.referenceText, elapsedSeconds, calculateStats, dispatch]);
 
   // Focus input on mount
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
-
-  const handleFinishTest = () => {
-    // Calculate final stats before finishing
-    const finalStats = calculateStats(
-      testState.typedText,
-      testState.referenceText,
-      elapsedSeconds
-    );
-
-    dispatch({
-      type: 'UPDATE_STATS',
-      payload: {
-        elapsedSeconds,
-        wpm: finalStats.wpm,
-        rawWpm: finalStats.rawWpm,
-        accuracy: finalStats.accuracy,
-        correctChars: finalStats.correctChars,
-        incorrectChars: finalStats.incorrectChars,
-        missedChars: finalStats.missedChars,
-        extraChars: finalStats.extraChars,
-        finalScore: finalStats.finalScore,
-        wordResults: finalStats.wordResults,
-      },
-    });
-
-    dispatch({ type: 'FINISH_TEST' });
-  };
 
   const fontSizeClass =
     config.displaySettings.fontSize === 'small'
@@ -105,7 +106,13 @@ export function DuringTestScreen() {
   return (
     <div className={`${containerClass} flex flex-col h-screen bg-white`}>
       {/* Stats Bar */}
-      <StatsBar wpm={testState.wpm} accuracy={testState.accuracy} mistakes={testState.incorrectChars} timer={remainingSeconds || elapsedSeconds} isTimeless={isTimeless} />
+      <StatsBar 
+        wpm={testState.wpm} 
+        accuracy={testState.accuracy} 
+        mistakes={testState.incorrectChars} 
+        timer={remainingSeconds} 
+        isTimeless={isTimeless} 
+      />
 
       {/* Reference Text */}
       <div className={`flex-1 overflow-auto p-6 bg-gray-50 ${fontSizeClass} ${contrastClass}`}>
