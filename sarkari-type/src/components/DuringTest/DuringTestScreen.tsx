@@ -52,48 +52,56 @@ export function DuringTestScreen() {
   });
 
   // Update stats periodically during active typing
+  // This effect should only recreate when test phase changes, not on every keystroke
   useEffect(() => {
-    updateIntervalRef.current = setInterval(() => {
-      // Only update if we have actually started (startTime > 0)
-      if (testState.phase === 'during' && !testState.isPaused && testState.startTime > 0) {
-        // Use actual elapsed time, with minimal fallback for initial render
-        const currentElapsed = timer.elapsedSeconds > 0 ? timer.elapsedSeconds : 0.01;
-        
-        const stats = calculateStats(
-          testState.typedText,
-          testState.referenceText,
-          currentElapsed
-        );
+    // Clear any existing interval
+    if (updateIntervalRef.current) {
+      clearInterval(updateIntervalRef.current);
+    }
 
-        dispatch({
-          type: 'UPDATE_STATS',
-          payload: {
-            elapsedSeconds: currentElapsed,
-            wpm: stats.wpm,
-            rawWpm: stats.rawWpm,
-            accuracy: stats.accuracy,
-            correctChars: stats.correctChars,
-            incorrectChars: stats.incorrectChars,
-            missedChars: stats.missedChars,
-            extraChars: stats.extraChars,
-            finalScore: stats.finalScore,
-            wordResults: stats.wordResults,
-          },
-        });
-      }
-    }, 200);
+    // Only set up interval if test is in progress
+    if (testState.phase === 'during') {
+      updateIntervalRef.current = setInterval(() => {
+        // Only update if we have actually started (startTime > 0) and not paused
+        if (testState.startTime > 0 && !testState.isPaused) {
+          // Use actual elapsed time, with minimal fallback for initial render
+          const currentElapsed = timer.elapsedSeconds > 0 ? timer.elapsedSeconds : 0.01;
+          
+          const stats = calculateStats(
+            testState.typedText,
+            testState.referenceText,
+            currentElapsed
+          );
+
+          dispatch({
+            type: 'UPDATE_STATS',
+            payload: {
+              elapsedSeconds: currentElapsed,
+              wpm: stats.wpm,
+              rawWpm: stats.rawWpm,
+              accuracy: stats.accuracy,
+              correctChars: stats.correctChars,
+              incorrectChars: stats.incorrectChars,
+              missedChars: stats.missedChars,
+              extraChars: stats.extraChars,
+              finalScore: stats.finalScore,
+              wordResults: stats.wordResults,
+            },
+          });
+        }
+      }, 200);
+    }
 
     return () => {
-      if (updateIntervalRef.current) clearInterval(updateIntervalRef.current);
+      if (updateIntervalRef.current) {
+        clearInterval(updateIntervalRef.current);
+      }
     };
   }, [
-    testState.phase, 
-    testState.isPaused, 
-    testState.startTime, 
-    testState.typedText, 
-    timer.elapsedSeconds,
-    calculateStats, 
-    dispatch
+    testState.phase,
+    // We intentionally do NOT include testState.typedText, testState.isPaused, 
+    // testState.startTime, or timer.elapsedSeconds to prevent constant recreation
+    // The interval will read the current values from closure on each tick
   ]);
 
   // Focus input on mount
