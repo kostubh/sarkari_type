@@ -33,17 +33,18 @@ export function useTypingStats() {
       const comparison = compareTexts(typedText, referenceText);
 
       // Calculate WPM
-      // Count correct spaces between words
-      const typedWords = typedText.split(/\s+/).filter((w) => w.length > 0);
-      const correctSpaces = Math.min(typedWords.length - 1, comparison.wordResults.filter((wr) => wr.status === 'correct').length - 1);
-      const correctSpacesCount = Math.max(0, correctSpaces);
-
-      const wpm = calculateWpm(comparison.totalCorrectChars, correctSpacesCount, elapsedSeconds);
+      // Standard WPM formula treats 5 characters as 1 word
+      // It should include correct spaces in the character count
+      // Using only totalCorrectChars which includes letters; spaces are often implicit in typing tests 
+      // but standard formula is (All Correct Entries / 5) / Time
+      
+      const wpm = calculateWpm(comparison.totalCorrectChars, 0, elapsedSeconds); 
+      
       const rawWpm = calculateRawWpm(
-        comparison.totalCorrectChars + comparison.totalIncorrectChars,
-        typedWords.length > 0 ? typedWords.length - 1 : 0,
-        comparison.totalIncorrectChars,
-        comparison.totalExtraChars,
+        comparison.totalCorrectChars + comparison.totalIncorrectChars + comparison.totalExtraChars,
+        0,
+        0,
+        0,
         elapsedSeconds
       );
 
@@ -53,20 +54,6 @@ export function useTypingStats() {
       // Calculate final score based on WPM and Accuracy
       const finalScore = calculateFinalScoreFromStats(wpm, accuracy);
       
-      console.log('useTypingStats calculateStats result:', {
-        typedTextLength: typedText.length,
-        referenceTextLength: referenceText.length,
-        elapsedSeconds,
-        wpm,
-        accuracy,
-        wordResultsCount: comparison.wordResults.length,
-        finalScore,
-        correctCount: comparison.wordResults.filter((w) => w.status === 'correct').length,
-        incorrectCount: comparison.wordResults.filter((w) => w.status === 'incorrect').length,
-        extraCount: comparison.wordResults.filter((w) => w.status === 'extra').length,
-        missingCount: comparison.wordResults.filter((w) => w.status === 'missing').length,
-      });
-
       return {
         wpm: isFinite(wpm) ? wpm : 0,
         rawWpm: isFinite(rawWpm) ? rawWpm : 0,
