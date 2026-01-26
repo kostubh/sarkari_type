@@ -141,9 +141,6 @@ export function DuringTestScreen() {
       <div className="p-6 border-t border-gray-200">
         <TypingInput
           inputRef={inputRef}
-          onTextChange={(text) => {
-            // Empty handler - we use onKeyPress instead to ensure startTime is set
-          }}
           onKeyPress={(char) => {
             dispatch({ type: 'ADD_TYPED_CHAR', payload: char });
           }}
