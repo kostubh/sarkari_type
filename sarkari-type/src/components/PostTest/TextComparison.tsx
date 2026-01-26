@@ -36,10 +36,10 @@ export function TextComparison({ wordResults }: TextComparisonProps) {
         {/* Reference Text */}
         <div>
           <h4 className="font-semibold text-gray-700 mb-3">Reference Text</h4>
-          <div className="p-4 bg-gray-50 rounded font-mono text-sm leading-relaxed border border-gray-200">
+          <div className="p-4 bg-gray-50 rounded font-mono text-sm leading-relaxed border border-gray-200 overflow-hidden word-break">
             {wordResults.map((result, idx) => (
-              <span key={idx} className={`${getWordClass(result)} mr-1`}>
-                {result.reference}
+              <span key={idx} className={`${getWordClass(result)} inline`}>
+                {result.reference}{idx < wordResults.length - 1 ? ' ' : ''}
               </span>
             ))}
           </div>
@@ -48,17 +48,17 @@ export function TextComparison({ wordResults }: TextComparisonProps) {
         {/* Typed Text with Error Highlighting */}
         <div>
           <h4 className="font-semibold text-gray-700 mb-3">Your Typing</h4>
-          <div className="p-4 bg-gray-50 rounded font-mono text-sm leading-relaxed border border-gray-200">
+          <div className="p-4 bg-gray-50 rounded font-mono text-sm leading-relaxed border border-gray-200 overflow-hidden word-break">
             {wordResults.map((result, idx) => (
-              <span key={idx}>
+              <span key={idx} className="inline">
                 {result.status === 'correct' ? (
-                  <span className="text-green-600 mr-1">{result.typed}</span>
+                  <span className="text-green-600">{result.typed}{idx < wordResults.length - 1 ? ' ' : ''}</span>
                 ) : result.status === 'missing' ? (
-                  <span className="text-gray-400 line-through mr-1">{result.reference}</span>
+                  <span className="text-gray-400 line-through">{result.reference}{idx < wordResults.length - 1 ? ' ' : ''}</span>
                 ) : result.status === 'extra' ? (
-                  <span className="text-orange-600 font-bold mr-1">{result.typed}</span>
+                  <span className="text-orange-600 font-bold">{result.typed}{idx < wordResults.length - 1 ? ' ' : ''}</span>
                 ) : (
-                  <span className="mr-1">
+                  <span>
                     {Array.from(result.typed || '').map((char, charIdx) => (
                       <span
                         key={charIdx}
@@ -71,6 +71,7 @@ export function TextComparison({ wordResults }: TextComparisonProps) {
                         {char}
                       </span>
                     ))}
+                    {idx < wordResults.length - 1 ? ' ' : ''}
                   </span>
                 )}
               </span>
