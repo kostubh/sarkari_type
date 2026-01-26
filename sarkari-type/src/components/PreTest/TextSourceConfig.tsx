@@ -19,7 +19,7 @@ export function TextSourceConfig() {
     setLoading(true);
     setError(null);
     try {
-      const text = await generateAIText(config.aiTopic);
+      const text = await generateAIText(config.aiTopic, config.wordCount);
       dispatch({
         type: 'SET_CONFIG',
         payload: { customText: text },
@@ -36,7 +36,7 @@ export function TextSourceConfig() {
     setLoading(true);
     setError(null);
     try {
-      const text = await fetchWikipediaText();
+      const text = await fetchWikipediaText(config.wordCount);
       dispatch({
         type: 'SET_CONFIG',
         payload: { customText: text },
@@ -231,7 +231,7 @@ export function TextSourceConfig() {
           disabled={loading}
           className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
         >
-          {loading ? 'Fetching...' : 'Fetch Random Article'}
+          {loading ? 'Fetching...' : `Fetch Random Article (${config.wordCount} words)`}
         </button>
       )}
 
@@ -257,7 +257,7 @@ export function TextSourceConfig() {
 
       {config.customText && (
         <div className="mt-4 p-3 bg-gray-100 rounded">
-          <p className="text-xs text-gray-600 mb-2">Preview:</p>
+          <p className="text-xs text-gray-600 mb-2">Preview (Word count: {config.customText.split(/\s+/).length}):</p>
           <p className="text-sm text-gray-700 line-clamp-3">{config.customText}</p>
         </div>
       )}
