@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTest } from '../../context/TestContext';
 import { useTimer } from '../../hooks/useTimer';
 import { useTypingStats } from '../../hooks/useTypingStats';
+import { useFullscreen } from '../../hooks/useFullscreen';
 import { ReferenceText } from './ReferenceText';
 import { TypingInput } from './TypingInput';
 import { StatsBar } from './StatsBar';
@@ -11,6 +12,7 @@ export function DuringTestScreen() {
   const { config, testState, dispatch } = useTest();
   const { calculateStats } = useTypingStats();
   const inputRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const updateIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
   // Use refs to track latest values for the interval callback
@@ -18,6 +20,9 @@ export function DuringTestScreen() {
   const timerRef = useRef({ elapsedSeconds: 0 });
 
   const isTimeless = config.timeMode === 'timeless';
+  
+  // Initialize fullscreen hook
+  useFullscreen(containerRef, testState.isFullscreen);
   
   const handleFinishTest = () => {
     // Use the actual elapsed time from timer, with minimal fallback only for edge cases
@@ -135,10 +140,8 @@ export function DuringTestScreen() {
         ? 'text-gray-400'
         : 'text-gray-700';
 
-  const containerClass = testState.isFullscreen ? 'fullscreen-container' : '';
-
   return (
-    <div className={`${containerClass} flex flex-col h-screen bg-white`}>
+    <div ref={containerRef} className="flex flex-col h-screen bg-white">
       {/* Stats Bar */}
       <StatsBar 
         timer={timer.remainingSeconds} 
