@@ -1,8 +1,7 @@
-import { useRef, useEffect } from 'react';
+import { useEffect } from 'react';
 
 interface TypingInputProps {
   inputRef: React.RefObject<HTMLDivElement>;
-  onTextChange: (text: string) => void;
   onKeyPress: (char: string) => void;
   onDelete: () => void;
   typedText: string;
@@ -10,7 +9,6 @@ interface TypingInputProps {
 
 export function TypingInput({
   inputRef,
-  onTextChange,
   onKeyPress,
   onDelete,
   typedText,
