@@ -20,6 +20,132 @@ const AI_TOPICS = [
   'Sports',
 ];
 
+const WIKIPEDIA_TOPICS = [
+  'Random Article',
+  'Science & Technology',
+  'History & Events',
+  'Geography & Places',
+  'Arts & Culture',
+  'Sports & Games',
+  'Biography & People',
+  'Nature & Animals',
+  'Space & Astronomy',
+  'Medicine & Health',
+];
+
+// Predefined Wikipedia articles for each category
+const WIKIPEDIA_ARTICLES: { [key: string]: string[] } = {
+  'Random Article': [], // Will use random API
+  'Science & Technology': [
+    'Artificial intelligence',
+    'Quantum computing',
+    'CRISPR',
+    'Renewable energy',
+    'Nanotechnology',
+    'Machine learning',
+    'Robotics',
+    'Blockchain',
+    'Internet of Things',
+    'Nuclear fusion',
+  ],
+  'History & Events': [
+    'World War II',
+    'Renaissance',
+    'Industrial Revolution',
+    'Ancient Egypt',
+    'Roman Empire',
+    'French Revolution',
+    'Cold War',
+    'Space Race',
+    'Age of Enlightenment',
+    'Silk Road',
+  ],
+  'Geography & Places': [
+    'Mount Everest',
+    'Amazon rainforest',
+    'Great Barrier Reef',
+    'Sahara Desert',
+    'Grand Canyon',
+    'Antarctica',
+    'Pacific Ocean',
+    'Himalayas',
+    'Mariana Trench',
+    'Victoria Falls',
+  ],
+  'Arts & Culture': [
+    'Leonardo da Vinci',
+    'William Shakespeare',
+    'Classical music',
+    'Impressionism',
+    'Jazz',
+    'Cinema',
+    'Architecture',
+    'Ballet',
+    'Photography',
+    'Modern art',
+  ],
+  'Sports & Games': [
+    'Olympic Games',
+    'FIFA World Cup',
+    'Cricket',
+    'Tennis',
+    'Chess',
+    'Basketball',
+    'Marathon',
+    'Swimming',
+    'Gymnastics',
+    'Formula One',
+  ],
+  'Biography & People': [
+    'Albert Einstein',
+    'Marie Curie',
+    'Nelson Mandela',
+    'Mahatma Gandhi',
+    'Isaac Newton',
+    'Charles Darwin',
+    'Nikola Tesla',
+    'Abraham Lincoln',
+    'Martin Luther King Jr.',
+    'Stephen Hawking',
+  ],
+  'Nature & Animals': [
+    'African elephant',
+    'Blue whale',
+    'Giant panda',
+    'Coral reef',
+    'Rainforest',
+    'Honey bee',
+    'Dolphin',
+    'Octopus',
+    'Bald eagle',
+    'Tiger',
+  ],
+  'Space & Astronomy': [
+    'Solar System',
+    'Mars',
+    'Black hole',
+    'International Space Station',
+    'Hubble Space Telescope',
+    'Milky Way',
+    'Moon landing',
+    'James Webb Space Telescope',
+    'Exoplanet',
+    'Big Bang',
+  ],
+  'Medicine & Health': [
+    'DNA',
+    'Vaccine',
+    'Human brain',
+    'Immune system',
+    'Cancer',
+    'Antibiotics',
+    'Virus',
+    'Nutrition',
+    'Mental health',
+    'Public health',
+  ],
+};
+
 const GOVERNMENT_DOC_TYPES = [
   'Office Memorandum',
   'Government Order',
@@ -96,14 +222,12 @@ export async function generateAIText(topic: string, wordCount: number = 100): Pr
 /**
  * Fetch full Wikipedia article content and extract first N words
  */
-export async function fetchWikipediaText(wordCount: number = 100, searchTerm?: string): Promise<string> {
+export async function fetchWikipediaText(wordCount: number = 100, category?: string): Promise<string> {
   try {
-    // Step 1: Get article title (random or specific)
+    // Step 1: Get article title (random or from category)
     let pageTitle: string;
     
-    if (searchTerm) {
-      pageTitle = searchTerm;
-    } else {
+    if (!category || category === 'Random Article') {
       // Get random article title
       const randomResponse = await fetch('https://en.wikipedia.org/api/rest_v1/page/random/summary');
       if (!randomResponse.ok) {
@@ -111,6 +235,22 @@ export async function fetchWikipediaText(wordCount: number = 100, searchTerm?: s
       }
       const randomData = await randomResponse.json();
       pageTitle = randomData.title;
+    } else {
+      // Select random article from the category's article list
+      const articles = WIKIPEDIA_ARTICLES[category] || [];
+      if (articles.length === 0) {
+        // Fallback to random if category has no articles
+        const randomResponse = await fetch('https://en.wikipedia.org/api/rest_v1/page/random/summary');
+        if (!randomResponse.ok) {
+          throw new Error('Failed to fetch random Wikipedia article');
+        }
+        const randomData = await randomResponse.json();
+        pageTitle = randomData.title;
+      } else {
+        // Pick random article from the list
+        const randomIndex = Math.floor(Math.random() * articles.length);
+        pageTitle = articles[randomIndex];
+      }
     }
 
     // Step 2: Fetch full article HTML content
@@ -166,6 +306,13 @@ export async function fetchWikipediaText(wordCount: number = 100, searchTerm?: s
  */
 export function getAITopics(): string[] {
   return AI_TOPICS;
+}
+
+/**
+ * Get list of Wikipedia topic categories
+ */
+export function getWikipediaTopics(): string[] {
+  return WIKIPEDIA_TOPICS;
 }
 
 /**
