@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { useTest } from '../../context/TestContext';
-import { generateAIText, fetchWikipediaText, getAITopics, prepareText } from '../../services/textApi';
+import {
+  generateAIText,
+  fetchWikipediaText,
+  getAITopics,
+  getGovernmentDocTypes,
+  generateGovernmentText,
+  generateCustomPromptText,
+  prepareText,
+} from '../../services/textApi';
 
 export function TextSourceConfig() {
   const { config, dispatch } = useTest();
@@ -41,6 +49,40 @@ export function TextSourceConfig() {
     }
   };
 
+  const handleGenerateGovernment = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const text = await generateGovernmentText(config.aiTopic, config.wordCount);
+      dispatch({
+        type: 'SET_CONFIG',
+        payload: { customText: text },
+      });
+    } catch (err) {
+      setError('Failed to generate government document. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateCustomPrompt = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const text = await generateCustomPromptText(config.customPrompt, config.wordCount);
+      dispatch({
+        type: 'SET_CONFIG',
+        payload: { customText: text },
+      });
+    } catch (err) {
+      setError('Failed to generate text from custom prompt. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
       <h3 className="text-lg font-semibold mb-4">📝 Text Source</h3>
@@ -66,29 +108,120 @@ export function TextSourceConfig() {
 
       {config.textSource === 'ai' && (
         <div className="space-y-3">
+          {/* Prompt Type Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">Topic</label>
-            <select
-              value={config.aiTopic}
-              onChange={(e) =>
-                dispatch({ type: 'SET_CONFIG', payload: { aiTopic: e.target.value } })
-              }
-              className="w-full border border-gray-300 rounded px-3 py-2"
-            >
-              {getAITopics().map((topic) => (
-                <option key={topic} value={topic}>
-                  {topic}
-                </option>
-              ))}
-            </select>
+            <label className="block text-sm font-medium mb-2">Prompt Type</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() =>
+                  dispatch({ type: 'SET_CONFIG', payload: { aiPromptType: 'preset' } })
+                }
+                className={`px-3 py-2 rounded font-medium transition flex-1 ${
+                  config.aiPromptType === 'preset'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Preset Topics
+              </button>
+              <button
+                onClick={() =>
+                  dispatch({ type: 'SET_CONFIG', payload: { aiPromptType: 'custom' } })
+                }
+                className={`px-3 py-2 rounded font-medium transition flex-1 ${
+                  config.aiPromptType === 'custom'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Custom Prompt
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handleGenerateAI}
-            disabled={loading}
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            {loading ? 'Generating...' : 'Generate AI Text'}
-          </button>
+
+          {config.aiPromptType === 'preset' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-2">Select Category</label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    onClick={() => dispatch({ type: 'SET_CONFIG', payload: { aiTopic: 'General' } })}
+                    className="px-3 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200"
+                  >
+                    General Topics
+                  </button>
+                  <button
+                    onClick={() =>
+                      dispatch({ type: 'SET_CONFIG', payload: { aiTopic: 'Office Memorandum' } })
+                    }
+                    className="px-3 py-1 text-sm rounded bg-gray-100 hover:bg-gray-200"
+                  >
+                    Government Docs
+                  </button>
+                </div>
+                <select
+                  value={config.aiTopic}
+                  onChange={(e) =>
+                    dispatch({ type: 'SET_CONFIG', payload: { aiTopic: e.target.value } })
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                >
+                  <optgroup label="General Topics">
+                    {getAITopics().map((topic) => (
+                      <option key={topic} value={topic}>
+                        {topic}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Government Documents">
+                    {getGovernmentDocTypes().map((docType) => (
+                      <option key={docType} value={docType}>
+                        {docType}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+              <button
+                onClick={() => {
+                  const isGovDoc = getGovernmentDocTypes().includes(config.aiTopic);
+                  if (isGovDoc) {
+                    handleGenerateGovernment();
+                  } else {
+                    handleGenerateAI();
+                  }
+                }}
+                disabled={loading}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {loading ? 'Generating...' : 'Generate Text'}
+              </button>
+            </>
+          )}
+
+          {config.aiPromptType === 'custom' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-2">Your Custom Prompt</label>
+                <textarea
+                  value={config.customPrompt}
+                  onChange={(e) =>
+                    dispatch({ type: 'SET_CONFIG', payload: { customPrompt: e.target.value } })
+                  }
+                  placeholder="e.g., Write a formal letter requesting leave for medical reasons..."
+                  rows={3}
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+              </div>
+              <button
+                onClick={handleGenerateCustomPrompt}
+                disabled={loading || !config.customPrompt.trim()}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {loading ? 'Generating...' : 'Generate from Prompt'}
+              </button>
+            </>
+          )}
         </div>
       )}
 

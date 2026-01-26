@@ -20,6 +20,19 @@ const AI_TOPICS = [
   'Sports',
 ];
 
+const GOVERNMENT_DOC_TYPES = [
+  'Office Memorandum',
+  'Government Order',
+  'Official Letter',
+  'Public Notice',
+  'Circular',
+  'Press Release',
+  'Policy Document',
+  'Service Rules',
+  'Tender Notice',
+  'RTI Response',
+];
+
 /**
  * Generate AI text using Perplexity Sonar API
  * This calls the API directly for now (in production, use Cloudflare Worker)
@@ -77,6 +90,70 @@ export async function fetchWikipediaText(searchTerm?: string): Promise<string> {
  */
 export function getAITopics(): string[] {
   return AI_TOPICS;
+}
+
+/**
+ * Get list of government document types
+ */
+export function getGovernmentDocTypes(): string[] {
+  return GOVERNMENT_DOC_TYPES;
+}
+
+/**
+ * Generate government document text
+ */
+export async function generateGovernmentText(docType: string, wordCount: number = 100): Promise<string> {
+  // Sample government document templates
+  const templates: { [key: string]: string } = {
+    'Office Memorandum': `GOVERNMENT OF INDIA
+Ministry of Personnel, Public Grievances and Pensions
+Department of Personnel and Training
+
+Office Memorandum
+
+Subject: Implementation of new guidelines for employee welfare schemes
+
+The undersigned is directed to refer to the subject mentioned above and to state that the Government has decided to implement revised guidelines for employee welfare schemes with effect from the date of issue of this memorandum. All departments are hereby requested to ensure strict compliance with the following provisions. The benefits under the scheme shall be extended to all eligible employees as per the criteria outlined in Annexure-A. Any clarification regarding implementation may be sought from the undersigned office.`,
+
+    'Government Order': `GOVERNMENT ORDER
+
+No. ABC/2024/001                                    Dated: ${new Date().toLocaleDateString()}
+
+In exercise of the powers conferred by Section 4 of the General Clauses Act, the Government hereby orders that the following amendments shall be made to the existing rules with immediate effect. These modifications are being introduced to streamline administrative procedures and enhance service delivery. All concerned departments shall take necessary action for implementation and report compliance within thirty days. This order supersedes all previous orders on the subject.`,
+
+    'Official Letter': `From: Under Secretary to the Government
+To: The Secretary, Department of Administrative Reforms
+
+Subject: Request for information regarding pending proposals
+
+Sir,
+I am directed to refer to your letter dated reference above and to request that information regarding all pending proposals be furnished to this office at the earliest. The matter is of urgent nature and requires immediate attention. It is requested that a detailed status report along with reasons for delay, if any, be submitted within seven working days. Your cooperation in this regard would be highly appreciated.
+
+Yours faithfully,
+Under Secretary`,
+
+    'Public Notice': `PUBLIC NOTICE
+
+The Department of Civil Services hereby notifies all concerned citizens that applications are invited for various positions under the annual recruitment drive. Eligible candidates must submit their applications through the online portal before the last date. All applicants are advised to carefully read the eligibility criteria and selection process outlined in the detailed notification available on the official website. Incomplete applications or those received after the deadline shall not be considered under any circumstances.`,
+  };
+
+  const template = templates[docType] || templates['Official Letter'];
+
+  // Truncate or pad to approximate word count
+  const words = template.split(/\s+/);
+  if (words.length > wordCount) {
+    return words.slice(0, wordCount).join(' ');
+  }
+  return template;
+}
+
+/**
+ * Generate text from custom prompt
+ */
+export async function generateCustomPromptText(prompt: string, wordCount: number = 100): Promise<string> {
+  // For now, return a message indicating this feature needs API integration
+  // In production, this would call an AI API with the custom prompt
+  return `Custom prompt generation would process: "${prompt}". This feature requires AI API integration. For now, please use preset topics or paste your own text.`;
 }
 
 /**

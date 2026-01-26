@@ -70,7 +70,7 @@ export function PDFExport({ testConfig, testState }: PDFExportProps) {
               <div style={{ fontSize: '12px', color: '#666' }}>Score</div>
             </div>
             <div style={{ border: '1px solid #ddd', padding: '10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{testState.elapsedSeconds.toFixed(1)}s</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{(testState.elapsedSeconds / 60).toFixed(2)}m</div>
               <div style={{ fontSize: '12px', color: '#666' }}>Duration</div>
             </div>
           </div>
@@ -79,7 +79,8 @@ export function PDFExport({ testConfig, testState }: PDFExportProps) {
           <div style={{ fontSize: '12px', color: '#666', marginBottom: '20px' }}>
             <p>Time Mode: {testConfig.timeMode}</p>
             <p>Text Source: {testConfig.textSource}</p>
-            <p>Duration: {testConfig.duration} seconds</p>
+            <p>Duration Limit: {testConfig.duration} minutes</p>
+            <p>Word Count: {testConfig.wordCount} words</p>
           </div>
         </div>
       </div>

@@ -57,7 +57,7 @@ export async function generateResultPDF(
     const testTime = new Date().toLocaleTimeString();
 
     pdf.text(`Date: ${testDate} ${testTime}`, 20, 35);
-    pdf.text(`Duration: ${testState.elapsedSeconds.toFixed(1)} seconds`, 20, 42);
+    pdf.text(`Duration: ${(testState.elapsedSeconds / 60).toFixed(2)} minutes`, 20, 42);
     pdf.text(`WPM: ${testState.wpm}`, 20, 49);
     pdf.text(`Accuracy: ${testState.accuracy.toFixed(1)}%`, 20, 56);
     pdf.text(`Final Score: ${testState.finalScore}`, 20, 63);
@@ -68,7 +68,8 @@ export async function generateResultPDF(
     pdf.setFontSize(10);
     pdf.text(`Time Mode: ${testConfig.timeMode}`, 25, 80);
     pdf.text(`Text Source: ${testConfig.textSource}`, 25, 86);
-    pdf.text(`Duration: ${testConfig.duration} seconds`, 25, 92);
+    pdf.text(`Duration Limit: ${testConfig.duration} minutes`, 25, 92);
+    pdf.text(`Word Count: ${testConfig.wordCount} words`, 25, 98);
 
     // Add the comparison image
     const imgData = canvas.toDataURL('image/png');

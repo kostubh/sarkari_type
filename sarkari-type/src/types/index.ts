@@ -1,9 +1,12 @@
 // Test Configuration
 export interface TestConfig {
   timeMode: 'timed' | 'timeless';
-  duration: number; // in seconds
+  duration: number; // in minutes
+  wordCount: number; // number of words for text generation
   textSource: 'ai' | 'wikipedia' | 'custom';
   aiTopic: string;
+  aiPromptType: 'preset' | 'custom';
+  customPrompt: string;
   customText: string;
   scoringOptions: {
     correctWord: number;
@@ -72,9 +75,12 @@ export interface WordComparisonResult {
 // Default Config
 export const DEFAULT_CONFIG: TestConfig = {
   timeMode: 'timed',
-  duration: 60,
+  duration: 1, // in minutes
+  wordCount: 100, // number of words
   textSource: 'ai',
   aiTopic: 'Technology',
+  aiPromptType: 'preset',
+  customPrompt: '',
   customText: '',
   scoringOptions: {
     correctWord: 10,

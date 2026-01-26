@@ -8,23 +8,25 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseTimerOptions {
-  duration: number; // in seconds
+  duration: number; // in minutes
   isTimeless: boolean;
   isActive: boolean;
   onTimeUp?: () => void;
 }
 
 export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerOptions) {
+  const durationInSeconds = duration * 60; // Convert minutes to seconds
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [remainingSeconds, setRemainingSeconds] = useState(duration);
+  const [remainingSeconds, setRemainingSeconds] = useState(durationInSeconds);
 
   const startTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
   const hasCalledTimeUpRef = useRef(false);
 
   const reset = useCallback(() => {
+    const durationInSeconds = duration * 60;
     setElapsedSeconds(0);
-    setRemainingSeconds(duration);
+    setRemainingSeconds(durationInSeconds);
     startTimeRef.current = 0;
     hasCalledTimeUpRef.current = false;
     if (animationFrameRef.current) {
@@ -52,7 +54,8 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
       setElapsedSeconds(elapsed);
 
       if (!isTimeless) {
-        const remaining = Math.max(0, duration - elapsed);
+        const durationInSeconds = duration * 60;
+        const remaining = Math.max(0, durationInSeconds - elapsed);
         setRemainingSeconds(remaining);
 
         // Call onTimeUp when timer reaches zero
