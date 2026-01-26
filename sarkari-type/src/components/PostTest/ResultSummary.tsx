@@ -21,7 +21,7 @@ export function ResultSummary({ testState }: ResultSummaryProps) {
           <div className="text-sm text-gray-600 font-medium">Accuracy</div>
         </div>
         <div className="text-center p-4 bg-white rounded shadow-sm">
-          <div className="text-3xl font-bold text-purple-600">{testState.finalScore}</div>
+          <div className="text-3xl font-bold text-purple-600">{testState.finalScore.toFixed(1)}</div>
           <div className="text-sm text-gray-600 font-medium">Score</div>
         </div>
         <div className="text-center p-4 bg-white rounded shadow-sm">

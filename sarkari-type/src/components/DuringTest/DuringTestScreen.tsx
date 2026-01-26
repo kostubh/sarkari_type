@@ -28,8 +28,7 @@ export function DuringTestScreen() {
         const stats = calculateStats(
           testState.typedText,
           testState.referenceText,
-          elapsedSeconds,
-          config.scoringOptions
+          elapsedSeconds
         );
 
         dispatch({
@@ -65,8 +64,7 @@ export function DuringTestScreen() {
     const finalStats = calculateStats(
       testState.typedText,
       testState.referenceText,
-      elapsedSeconds,
-      config.scoringOptions
+      elapsedSeconds
     );
 
     dispatch({

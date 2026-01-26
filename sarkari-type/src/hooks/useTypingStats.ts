@@ -7,7 +7,7 @@
 import { useCallback } from 'react';
 import { compareTexts } from '../utils/textComparison';
 import { calculateWpm, calculateAccuracy, calculateRawWpm } from '../utils/wpmCalculation';
-import { calculateFinalScore, ScoringOptions } from '../utils/scoring';
+import { calculateFinalScoreFromStats } from '../utils/scoring';
 import { WordResult } from '../types';
 
 export interface TypingStatsResult {
@@ -27,8 +27,7 @@ export function useTypingStats() {
     (
       typedText: string,
       referenceText: string,
-      elapsedSeconds: number,
-      scoringOptions: ScoringOptions
+      elapsedSeconds: number
     ): TypingStatsResult => {
       // Compare texts and get detailed results
       const comparison = compareTexts(typedText, referenceText);
@@ -51,8 +50,22 @@ export function useTypingStats() {
       // Calculate accuracy
       const accuracy = calculateAccuracy(comparison.totalCorrectChars, comparison.totalIncorrectChars);
 
-      // Calculate final score
-      const finalScore = calculateFinalScore(comparison.wordResults, scoringOptions);
+      // Calculate final score based on WPM and Accuracy
+      const finalScore = calculateFinalScoreFromStats(wpm, accuracy);
+      
+      console.log('useTypingStats calculateStats result:', {
+        typedTextLength: typedText.length,
+        referenceTextLength: referenceText.length,
+        elapsedSeconds,
+        wpm,
+        accuracy,
+        wordResultsCount: comparison.wordResults.length,
+        finalScore,
+        correctCount: comparison.wordResults.filter((w) => w.status === 'correct').length,
+        incorrectCount: comparison.wordResults.filter((w) => w.status === 'incorrect').length,
+        extraCount: comparison.wordResults.filter((w) => w.status === 'extra').length,
+        missingCount: comparison.wordResults.filter((w) => w.status === 'missing').length,
+      });
 
       return {
         wpm: isFinite(wpm) ? wpm : 0,
