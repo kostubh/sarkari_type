@@ -1,0 +1,72 @@
+/**
+ * Typing Stats Hook
+ *
+ * Calculates WPM, accuracy, and error counts in real-time
+ */
+
+import { useCallback } from 'react';
+import { compareTexts } from '../utils/textComparison';
+import { calculateWpm, calculateAccuracy, calculateRawWpm } from '../utils/wpmCalculation';
+import { calculateFinalScore, ScoringOptions } from '../utils/scoring';
+
+export interface TypingStatsResult {
+  wpm: number;
+  rawWpm: number;
+  accuracy: number;
+  correctChars: number;
+  incorrectChars: number;
+  missedChars: number;
+  extraChars: number;
+  finalScore: number;
+  wordResults: any[];
+}
+
+export function useTypingStats() {
+  const calculateStats = useCallback(
+    (
+      typedText: string,
+      referenceText: string,
+      elapsedSeconds: number,
+      scoringOptions: ScoringOptions
+    ): TypingStatsResult => {
+      // Compare texts and get detailed results
+      const comparison = compareTexts(typedText, referenceText);
+
+      // Calculate WPM
+      // Count correct spaces between words
+      const typedWords = typedText.split(/\s+/).filter((w) => w.length > 0);
+      const correctSpaces = Math.min(typedWords.length - 1, comparison.wordResults.filter((wr) => wr.status === 'correct').length - 1);
+      const correctSpacesCount = Math.max(0, correctSpaces);
+
+      const wpm = calculateWpm(comparison.totalCorrectChars, correctSpacesCount, elapsedSeconds);
+      const rawWpm = calculateRawWpm(
+        comparison.totalCorrectChars + comparison.totalIncorrectChars,
+        typedWords.length > 0 ? typedWords.length - 1 : 0,
+        comparison.totalIncorrectChars,
+        comparison.totalExtraChars,
+        elapsedSeconds
+      );
+
+      // Calculate accuracy
+      const accuracy = calculateAccuracy(comparison.totalCorrectChars, comparison.totalIncorrectChars);
+
+      // Calculate final score
+      const finalScore = calculateFinalScore(comparison.wordResults, scoringOptions);
+
+      return {
+        wpm: isFinite(wpm) ? wpm : 0,
+        rawWpm: isFinite(rawWpm) ? rawWpm : 0,
+        accuracy: isFinite(accuracy) ? accuracy : 100,
+        correctChars: comparison.totalCorrectChars,
+        incorrectChars: comparison.totalIncorrectChars,
+        missedChars: comparison.totalMissedChars,
+        extraChars: comparison.totalExtraChars,
+        finalScore,
+        wordResults: comparison.wordResults,
+      };
+    },
+    []
+  );
+
+  return { calculateStats };
+}

@@ -1,0 +1,40 @@
+- I want to be able to get the amazing capability and algorithm of monkey type and develop a python website that I can host on streamlit. Current repo is a fork of monkeytype.
+- Initial design of the has three main screens. Later on the project can develop into many more.
+- Make the project to be modular, mantainable and well planned and documented.
+- Screens:
+    - Pre-Test
+      - User should be able to configure these test parameters:
+        - Time in successions of minutes or timeless
+        - Test text:
+            - AI generated on-demand text with some suggestions like a diplomatic letter. (using Sonar) 
+            - Random Wikipedia article
+            - Custom user pasted text
+        -  Scoring
+            - Correct word
+            - Missing word
+            - Incorrect spelling
+            - Incorrect punctuation
+            - Incorrect Case 
+    - During Test
+        - Scoring paramters are locked as soon as the test starts
+        - Option to full screen the window
+        - Scrollable reference text appears at top of the screen  
+        - Running timer (Automatically starting at the type of first word and would not stop/pause unless the pause button is pressed)
+        - If the timer runs out the test will auto submit
+        - If the submit button is pressed the user can manually end or reset the test anytime
+        - Speed analytics need to be calculates in the runtime while the test is happening for overall time passed. I think JS is the best choice for it as it runs at the clients end. Should I stick to js here instead of choosing python? I actually wanted to be able to use free streamlit hosting.
+        - Everything has to be very perfect
+        - All runtime paramters should be show to the user and updated atleast once every second.
+         - Words per minutes
+         - Countdown/timer
+         - Correct words
+         - Mistakes
+        - Options that can be changed during the test:
+            - reference and typed text size
+            - reference text guide pointer on/off
+            - reference and typed text color/contrast/bold
+    - Post Test
+        - User is congratulated on completing the test.
+        - All test parameters will be highlighted now.
+        - A side by side ref text and typed text comparision is shown to user with correct text mistakes/half mistakes highlighted differently.
+        - The test report should be downloadable as a pdf and look very professional.
