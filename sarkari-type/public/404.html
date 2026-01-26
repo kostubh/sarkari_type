@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>SarkariType</title>
+    <script>
+      // Redirect to the correct base path for GitHub Pages
+      var pathparts = location.pathname.split('/');
+      var i = pathparts.length - 1;
+      while (i >= 0) {
+        if (pathparts[i] === 'sarkari-type') {
+          // Redirect to index.html with the correct base path
+          window.location = '/sarkari-type/';
+          return;
+        }
+        i--;
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
