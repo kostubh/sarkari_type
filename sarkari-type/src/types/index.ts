@@ -8,6 +8,7 @@ export interface TestConfig {
   aiPromptType: 'preset' | 'custom';
   customPrompt: string;
   customText: string;
+  wikipediaTopic: string; // Selected Wikipedia article topic
   scoringOptions: {
     correctWord: number;
     missingWord: number;
@@ -77,11 +78,12 @@ export const DEFAULT_CONFIG: TestConfig = {
   timeMode: 'timed',
   duration: 1, // in minutes
   wordCount: 100, // number of words
-  textSource: 'ai',
+  textSource: 'wikipedia', // Default to Wikipedia
   aiTopic: 'Technology',
   aiPromptType: 'preset',
   customPrompt: '',
   customText: '',
+  wikipediaTopic: 'Random Article', // Default Wikipedia selection
   scoringOptions: {
     correctWord: 10,
     missingWord: -5,
