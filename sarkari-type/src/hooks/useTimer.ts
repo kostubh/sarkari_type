@@ -8,15 +8,18 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseTimerOptions {
-  duration: number; // in seconds
+  duration: number; // in MINUTES from config
   isTimeless: boolean;
   isActive: boolean;
   onTimeUp?: () => void;
 }
 
 export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerOptions) {
+  // Convert duration from minutes to seconds
+  const durationInSeconds = duration * 60;
+  
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [remainingSeconds, setRemainingSeconds] = useState(duration);
+  const [remainingSeconds, setRemainingSeconds] = useState(durationInSeconds);
 
   // Refs to track timing state without re-renders
   const startTimeRef = useRef<number>(0);
@@ -32,7 +35,7 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
 
   const reset = useCallback(() => {
     setElapsedSeconds(0);
-    setRemainingSeconds(duration);
+    setRemainingSeconds(duration * 60);
     startTimeRef.current = 0;
     accumulatedTimeRef.current = 0;
     hasCalledTimeUpRef.current = false;
@@ -56,7 +59,7 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
         setElapsedSeconds(totalElapsed);
 
         if (!isTimeless) {
-          const remaining = Math.max(0, duration - totalElapsed);
+          const remaining = Math.max(0, durationInSeconds - totalElapsed);
           setRemainingSeconds(remaining);
 
           if (remaining <= 0 && !hasCalledTimeUpRef.current) {
@@ -88,7 +91,7 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isActive, isTimeless, duration]);
+  }, [isActive, isTimeless, durationInSeconds]);
 
   return {
     elapsedSeconds: Math.round(elapsedSeconds * 100) / 100,
