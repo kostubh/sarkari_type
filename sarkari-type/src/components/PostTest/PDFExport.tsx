@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TestConfig, TestState } from '../../types';
 import { generateResultPDF } from '../../utils/pdfGenerator';
 
@@ -7,16 +7,33 @@ interface PDFExportProps {
   testState: TestState;
 }
 
+const CANDIDATE_NAME_KEY = 'sarkaritype_candidate_name';
+
 export function PDFExport({ testConfig, testState }: PDFExportProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [candidateName, setCandidateName] = useState('');
+  const [showNameInput, setShowNameInput] = useState(false);
+
+  // Load saved name from localStorage on mount
+  useEffect(() => {
+    const savedName = localStorage.getItem(CANDIDATE_NAME_KEY);
+    if (savedName) {
+      setCandidateName(savedName);
+    }
+  }, []);
 
   const handleGeneratePDF = async () => {
+    // Save name to localStorage if provided
+    if (candidateName.trim()) {
+      localStorage.setItem(CANDIDATE_NAME_KEY, candidateName.trim());
+    }
+
     setIsGenerating(true);
     setError(null);
 
     try {
-      await generateResultPDF('', testConfig, testState);
+      await generateResultPDF('', testConfig, testState, candidateName.trim() || 'Anonymous User');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate PDF');
       console.error('PDF generation error:', err);
@@ -56,6 +73,40 @@ export function PDFExport({ testConfig, testState }: PDFExportProps) {
               <span>Performance interpretation and personalized recommendations</span>
             </li>
           </ul>
+
+          {/* Name Input Section */}
+          <div className="mb-4">
+            <button
+              onClick={() => setShowNameInput(!showNameInput)}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+            >
+              {showNameInput ? '▼' : '▶'} {candidateName ? 'Edit candidate name' : 'Add candidate name (optional)'}
+            </button>
+            
+            {showNameInput && (
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Candidate Name
+                </label>
+                <input
+                  type="text"
+                  value={candidateName}
+                  onChange={(e) => setCandidateName(e.target.value)}
+                  placeholder="Enter your name (or leave blank for 'Anonymous User')"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Your name will be saved for future reports and displayed in the PDF.
+                </p>
+              </div>
+            )}
+            
+            {candidateName && !showNameInput && (
+              <p className="mt-1 text-sm text-gray-600">
+                Report will be generated for: <span className="font-semibold">{candidateName}</span>
+              </p>
+            )}
+          </div>
 
           <button
             onClick={handleGeneratePDF}
