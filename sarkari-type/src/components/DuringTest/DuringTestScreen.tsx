@@ -61,6 +61,30 @@ export function DuringTestScreen() {
   }, []);
 
   const handleFinishTest = () => {
+    // Calculate final stats before finishing
+    const finalStats = calculateStats(
+      testState.typedText,
+      testState.referenceText,
+      elapsedSeconds,
+      config.scoringOptions
+    );
+
+    dispatch({
+      type: 'UPDATE_STATS',
+      payload: {
+        elapsedSeconds,
+        wpm: finalStats.wpm,
+        rawWpm: finalStats.rawWpm,
+        accuracy: finalStats.accuracy,
+        correctChars: finalStats.correctChars,
+        incorrectChars: finalStats.incorrectChars,
+        missedChars: finalStats.missedChars,
+        extraChars: finalStats.extraChars,
+        finalScore: finalStats.finalScore,
+        wordResults: finalStats.wordResults,
+      },
+    });
+
     dispatch({ type: 'FINISH_TEST' });
   };
 
