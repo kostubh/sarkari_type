@@ -16,8 +16,8 @@ export function DuringTestScreen() {
   const isTimeless = config.timeMode === 'timeless';
   
   const handleFinishTest = () => {
-    // If elapsedSeconds is 0 (immediate finish), fallback to a small value to avoid division by zero
-    const finalElapsed = Math.max(0.1, timer.elapsedSeconds);
+    // Use the actual elapsed time from timer, with minimal fallback only for edge cases
+    const finalElapsed = timer.elapsedSeconds > 0 ? timer.elapsedSeconds : 0.01;
 
     const finalStats = calculateStats(
       testState.typedText,
@@ -51,20 +51,13 @@ export function DuringTestScreen() {
     onTimeUp: handleFinishTest,
   });
 
-  // Explicitly reset timer when test state resets (start time becomes 0)
-  useEffect(() => {
-    if (testState.startTime === 0) {
-      timer.reset();
-    }
-  }, [testState.startTime, timer.reset]);
-
-  // Update stats periodically
+  // Update stats periodically during active typing
   useEffect(() => {
     updateIntervalRef.current = setInterval(() => {
       // Only update if we have actually started (startTime > 0)
       if (testState.phase === 'during' && !testState.isPaused && testState.startTime > 0) {
-        // Prevent 0 division in live stats
-        const currentElapsed = Math.max(0.1, timer.elapsedSeconds);
+        // Use actual elapsed time, with minimal fallback for initial render
+        const currentElapsed = timer.elapsedSeconds > 0 ? timer.elapsedSeconds : 0.01;
         
         const stats = calculateStats(
           testState.typedText,
@@ -98,7 +91,7 @@ export function DuringTestScreen() {
     testState.isPaused, 
     testState.startTime, 
     testState.typedText, 
-    timer.elapsedSeconds, // Use timer object directly
+    timer.elapsedSeconds,
     calculateStats, 
     dispatch
   ]);
