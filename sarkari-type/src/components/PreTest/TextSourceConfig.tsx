@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTest } from '../../context/TestContext';
 import {
   generateAIText,
@@ -14,6 +14,12 @@ export function TextSourceConfig() {
   const { config, dispatch } = useTest();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generatedWordCount, setGeneratedWordCount] = useState<number | null>(null);
+
+  // Check if current text word count matches the configured word count
+  const currentTextWordCount = config.customText ? config.customText.split(/\s+/).filter(w => w.length > 0).length : 0;
+  const wordCountMismatch = config.customText && currentTextWordCount > 0 && 
+                            Math.abs(currentTextWordCount - config.wordCount) > 10; // Allow 10 word tolerance
 
   const handleGenerateAI = async () => {
     setLoading(true);
@@ -24,6 +30,7 @@ export function TextSourceConfig() {
         type: 'SET_CONFIG',
         payload: { customText: text },
       });
+      setGeneratedWordCount(text.split(/\s+/).filter(w => w.length > 0).length);
     } catch (err) {
       setError('Failed to generate text. Please try again.');
       console.error(err);
@@ -41,6 +48,7 @@ export function TextSourceConfig() {
         type: 'SET_CONFIG',
         payload: { customText: text },
       });
+      setGeneratedWordCount(text.split(/\s+/).filter(w => w.length > 0).length);
     } catch (err) {
       setError('Failed to fetch Wikipedia article. Please try again.');
       console.error(err);
@@ -58,6 +66,7 @@ export function TextSourceConfig() {
         type: 'SET_CONFIG',
         payload: { customText: text },
       });
+      setGeneratedWordCount(text.split(/\s+/).filter(w => w.length > 0).length);
     } catch (err) {
       setError('Failed to generate government document. Please try again.');
       console.error(err);
@@ -75,6 +84,7 @@ export function TextSourceConfig() {
         type: 'SET_CONFIG',
         payload: { customText: text },
       });
+      setGeneratedWordCount(text.split(/\s+/).filter(w => w.length > 0).length);
     } catch (err) {
       setError('Failed to generate text from custom prompt. Please try again.');
       console.error(err);
@@ -82,6 +92,17 @@ export function TextSourceConfig() {
       setLoading(false);
     }
   };
+
+  // Auto-regenerate when word count changes (only if we have previously generated text from AI/Wikipedia)
+  useEffect(() => {
+    if (generatedWordCount !== null && config.textSource !== 'custom') {
+      // Show warning that word count changed
+      const timer = setTimeout(() => {
+        setGeneratedWordCount(null); // Reset to allow new generation
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [config.wordCount]);
 
   return (
     <div className="mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -105,6 +126,24 @@ export function TextSourceConfig() {
           ))}
         </div>
       </div>
+
+      {/* Word Count Mismatch Warning */}
+      {wordCountMismatch && config.textSource !== 'custom' && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+          <span className="text-yellow-600 text-lg">⚠️</span>
+          <div className="flex-1">
+            <p className="text-sm text-yellow-800 font-medium">
+              Word count mismatch detected!
+            </p>
+            <p className="text-xs text-yellow-700 mt-1">
+              Current text: {currentTextWordCount} words | Target: {config.wordCount} words
+            </p>
+            <p className="text-xs text-yellow-700 mt-1">
+              Click the generate button again to create new text with {config.wordCount} words.
+            </p>
+          </div>
+        </div>
+      )}
 
       {config.textSource === 'ai' && (
         <div className="space-y-3">
@@ -194,7 +233,7 @@ export function TextSourceConfig() {
                 disabled={loading}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
               >
-                {loading ? 'Generating...' : 'Generate Text'}
+                {loading ? 'Generating...' : `Generate Text (${config.wordCount} words)`}
               </button>
             </>
           )}
@@ -218,7 +257,7 @@ export function TextSourceConfig() {
                 disabled={loading || !config.customPrompt.trim()}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded font-medium hover:bg-blue-700 disabled:bg-gray-400"
               >
-                {loading ? 'Generating...' : 'Generate from Prompt'}
+                {loading ? 'Generating...' : `Generate from Prompt (${config.wordCount} words)`}
               </button>
             </>
           )}
@@ -257,7 +296,13 @@ export function TextSourceConfig() {
 
       {config.customText && (
         <div className="mt-4 p-3 bg-gray-100 rounded">
-          <p className="text-xs text-gray-600 mb-2">Preview (Word count: {config.customText.split(/\s+/).length}):</p>
+          <p className="text-xs text-gray-600 mb-2">
+            Preview (Word count: {currentTextWordCount}
+            {config.textSource !== 'custom' && currentTextWordCount !== config.wordCount && (
+              <span className="text-yellow-600 font-medium"> - Target: {config.wordCount}</span>
+            )}
+            ):
+          </p>
           <p className="text-sm text-gray-700 line-clamp-3">{config.customText}</p>
         </div>
       )}
