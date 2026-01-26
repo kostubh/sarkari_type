@@ -152,8 +152,8 @@ The Department of Civil Services hereby notifies all concerned citizens that app
  */
 export async function generateCustomPromptText(prompt: string, wordCount: number = 100): Promise<string> {
   // For now, return a message indicating this feature needs API integration
-  // In production, this would call an AI API with the custom prompt
-  return `Custom prompt generation would process: "${prompt}". This feature requires AI API integration. For now, please use preset topics or paste your own text.`;
+  // In production, this would call an AI API with the custom prompt and wordCount
+  return `Custom prompt generation would process: "${prompt}" (${wordCount} words). This feature requires AI API integration. For now, please use preset topics or paste your own text.`;
 }
 
 /**
