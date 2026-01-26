@@ -17,12 +17,25 @@ export async function generateResultPDF(
   if (!element) throw new Error('Result element not found');
 
   try {
+    // Temporarily make element visible for screenshot
+    const originalDisplay = (element as HTMLElement).style.display;
+    const originalPosition = (element as HTMLElement).style.position;
+    (element as HTMLElement).style.display = 'block';
+    (element as HTMLElement).style.position = 'absolute';
+    (element as HTMLElement).style.left = '-9999px';
+
     // Convert HTML element to canvas
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
+      logging: false,
     });
+
+    // Restore original display
+    (element as HTMLElement).style.display = originalDisplay;
+    (element as HTMLElement).style.position = originalPosition;
+    (element as HTMLElement).style.left = '';
 
     // Create PDF
     const pdf = new jsPDF({

@@ -33,8 +33,18 @@ export function PDFExport({ testConfig, testState }: PDFExportProps) {
   return (
     <div>
       {/* Hidden PDF content */}
-      <div id="pdf-content" ref={resultRef} className="hidden">
-        <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <div
+        id="pdf-content"
+        ref={resultRef}
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: '0',
+          width: '800px',
+          visibility: 'hidden'
+        }}
+      >
+        <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', backgroundColor: '#ffffff' }}>
           <h1 style={{ marginBottom: '20px' }}>SarkariType - Test Results</h1>
 
           <div style={{ marginBottom: '20px' }}>
