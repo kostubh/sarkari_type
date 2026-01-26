@@ -2,7 +2,7 @@
  * Timer Hook
  *
  * High-precision timer using performance.now()
- * Adapted from MonkeyType's test-timer.ts
+ * Supports pause/resume and auto-cleanup
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -15,17 +15,17 @@ interface UseTimerOptions {
 }
 
 export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerOptions) {
-  // duration is already in seconds now, based on standard config
-  const durationInSeconds = duration; 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [remainingSeconds, setRemainingSeconds] = useState(durationInSeconds);
+  const [remainingSeconds, setRemainingSeconds] = useState(duration);
 
+  // Refs to track timing state without re-renders
   const startTimeRef = useRef<number>(0);
+  const accumulatedTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
   const hasCalledTimeUpRef = useRef(false);
   const onTimeUpRef = useRef(onTimeUp);
 
-  // Keep ref in sync with latest callback to avoid re-subscribing effect
+  // Keep callback ref fresh
   useEffect(() => {
     onTimeUpRef.current = onTimeUp;
   }, [onTimeUp]);
@@ -34,46 +34,54 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
     setElapsedSeconds(0);
     setRemainingSeconds(duration);
     startTimeRef.current = 0;
+    accumulatedTimeRef.current = 0;
     hasCalledTimeUpRef.current = false;
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
   }, [duration]);
 
+  // Handle Active State Changes (Start/Pause/Resume)
   useEffect(() => {
-    if (!isActive) {
+    if (isActive) {
+      // START or RESUME
+      startTimeRef.current = performance.now();
+      hasCalledTimeUpRef.current = false;
+
+      const updateTimer = () => {
+        const now = performance.now();
+        const currentSessionElapsed = (now - startTimeRef.current) / 1000;
+        const totalElapsed = accumulatedTimeRef.current + currentSessionElapsed;
+
+        setElapsedSeconds(totalElapsed);
+
+        if (!isTimeless) {
+          const remaining = Math.max(0, duration - totalElapsed);
+          setRemainingSeconds(remaining);
+
+          if (remaining <= 0 && !hasCalledTimeUpRef.current) {
+            hasCalledTimeUpRef.current = true;
+            onTimeUpRef.current?.();
+          }
+        }
+
+        animationFrameRef.current = requestAnimationFrame(updateTimer);
+      };
+
+      animationFrameRef.current = requestAnimationFrame(updateTimer);
+    } else {
+      // PAUSE or STOP
+      if (startTimeRef.current > 0) {
+        // If we were running, accumulate the elapsed time
+        const now = performance.now();
+        accumulatedTimeRef.current += (now - startTimeRef.current) / 1000;
+        startTimeRef.current = 0; // Reset session start
+      }
+      
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      return;
     }
-
-    // Initialize start time on first activation
-    if (startTimeRef.current === 0) {
-      startTimeRef.current = performance.now();
-    }
-
-    const updateTimer = () => {
-      const now = performance.now();
-      const elapsed = (now - startTimeRef.current) / 1000;
-
-      setElapsedSeconds(elapsed);
-
-      if (!isTimeless) {
-        const remaining = Math.max(0, duration - elapsed);
-        setRemainingSeconds(remaining);
-
-        // Call onTimeUp when timer reaches zero
-        if (remaining === 0 && !hasCalledTimeUpRef.current) {
-          hasCalledTimeUpRef.current = true;
-          onTimeUpRef.current?.();
-        }
-      }
-
-      animationFrameRef.current = requestAnimationFrame(updateTimer);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(updateTimer);
 
     return () => {
       if (animationFrameRef.current) {
