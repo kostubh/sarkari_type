@@ -48,8 +48,13 @@ export function useTypingStats() {
         elapsedSeconds
       );
 
-      // Calculate accuracy
-      const accuracy = calculateAccuracy(comparison.totalCorrectChars, comparison.totalIncorrectChars);
+      // Calculate accuracy including ALL error types
+      const accuracy = calculateAccuracy(
+        comparison.totalCorrectChars,
+        comparison.totalIncorrectChars,
+        comparison.totalMissedChars,
+        comparison.totalExtraChars
+      );
 
       // Calculate final score based on WPM and Accuracy
       const finalScore = calculateFinalScoreFromStats(wpm, accuracy);
