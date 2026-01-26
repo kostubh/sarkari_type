@@ -11,7 +11,8 @@ import { TestConfig, TestState } from '../types';
 export async function generateResultPDF(
   _resultElementId: string,
   testConfig: TestConfig,
-  testState: TestState
+  testState: TestState,
+  candidateName: string = 'Anonymous User'
 ): Promise<void> {
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -94,7 +95,7 @@ export async function generateResultPDF(
   
   // Candidate & Session Details
   addSectionTitle('Candidate & Session Details', 14);
-  addKeyValuePair('Candidate', 'Anonymous User');
+  addKeyValuePair('Candidate', candidateName);
   addKeyValuePair('Test Date', testDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
   addKeyValuePair('Test Time', testDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
   addKeyValuePair('Session Duration', `${testState.elapsedSeconds.toFixed(1)} seconds`);
