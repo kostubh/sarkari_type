@@ -142,7 +142,7 @@ export function DuringTestScreen() {
         <TypingInput
           inputRef={inputRef}
           onTextChange={(text) => {
-            dispatch({ type: 'UPDATE_STATS', payload: { typedText: text } });
+            // Empty handler - we use onKeyPress instead to ensure startTime is set
           }}
           onKeyPress={(char) => {
             dispatch({ type: 'ADD_TYPED_CHAR', payload: char });
