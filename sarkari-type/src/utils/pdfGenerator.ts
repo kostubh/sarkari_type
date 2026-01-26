@@ -63,16 +63,6 @@ export async function generateResultPDF(
     currentY += size === 14 ? 8 : 10;
   };
 
-  const addText = (text: string, size = 10, isBold = false) => {
-    pdf.setFontSize(size);
-    pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
-    pdf.setTextColor(0, 0, 0);
-    const lines = pdf.splitTextToSize(text, contentWidth);
-    checkPageBreak(lines.length * (size * 0.5));
-    pdf.text(lines, margin, currentY);
-    currentY += lines.length * (size * 0.5) + 2;
-  };
-
   const addKeyValuePair = (key: string, value: string) => {
     checkPageBreak(6);
     pdf.setFontSize(10);
@@ -206,7 +196,6 @@ export async function generateResultPDF(
   ];
 
   // Draw table
-  const tableStartY = currentY;
   const colWidth = contentWidth / 2;
   const rowHeight = 8;
 
