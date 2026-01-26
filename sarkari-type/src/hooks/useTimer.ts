@@ -8,25 +8,31 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface UseTimerOptions {
-  duration: number; // in minutes
+  duration: number; // in seconds
   isTimeless: boolean;
   isActive: boolean;
   onTimeUp?: () => void;
 }
 
 export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerOptions) {
-  const durationInSeconds = duration * 60; // Convert minutes to seconds
+  // duration is already in seconds now, based on standard config
+  const durationInSeconds = duration; 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(durationInSeconds);
 
   const startTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
   const hasCalledTimeUpRef = useRef(false);
+  const onTimeUpRef = useRef(onTimeUp);
+
+  // Keep ref in sync with latest callback to avoid re-subscribing effect
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
+  }, [onTimeUp]);
 
   const reset = useCallback(() => {
-    const durationInSeconds = duration * 60;
     setElapsedSeconds(0);
-    setRemainingSeconds(durationInSeconds);
+    setRemainingSeconds(duration);
     startTimeRef.current = 0;
     hasCalledTimeUpRef.current = false;
     if (animationFrameRef.current) {
@@ -54,14 +60,13 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
       setElapsedSeconds(elapsed);
 
       if (!isTimeless) {
-        const durationInSeconds = duration * 60;
-        const remaining = Math.max(0, durationInSeconds - elapsed);
+        const remaining = Math.max(0, duration - elapsed);
         setRemainingSeconds(remaining);
 
         // Call onTimeUp when timer reaches zero
         if (remaining === 0 && !hasCalledTimeUpRef.current) {
           hasCalledTimeUpRef.current = true;
-          onTimeUp?.();
+          onTimeUpRef.current?.();
         }
       }
 
@@ -75,7 +80,7 @@ export function useTimer({ duration, isTimeless, isActive, onTimeUp }: UseTimerO
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isActive, isTimeless, duration, onTimeUp]);
+  }, [isActive, isTimeless, duration]);
 
   return {
     elapsedSeconds: Math.round(elapsedSeconds * 100) / 100,
