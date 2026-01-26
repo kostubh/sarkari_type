@@ -141,9 +141,6 @@ export function DuringTestScreen() {
     <div className={`${containerClass} flex flex-col h-screen bg-white`}>
       {/* Stats Bar */}
       <StatsBar 
-        wpm={testState.wpm} 
-        accuracy={testState.accuracy} 
-        mistakes={testState.incorrectChars} 
         timer={timer.remainingSeconds} 
         isTimeless={isTimeless} 
       />
