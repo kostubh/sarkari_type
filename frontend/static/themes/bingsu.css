@@ -1,7 +1,0 @@
-/* .word.error{
-  border-bottom: double 4px var(--error-color);
-} */
-
-nav .textButton:nth-child(1) {
-  color: var(--caret-color);
-}
