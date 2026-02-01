@@ -3,29 +3,24 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found - SarkariType | Free Typing Test for Government Exams</title>
-    <meta name="description" content="The page you're looking for doesn't exist. Visit SarkariType for free typing speed tests designed for SSC, CPCT, RRB & other Indian government exams." />
+    <title>SarkariType - Free Typing Test for Government Exams</title>
     <meta name="robots" content="noindex, follow" />
-    <link rel="canonical" href="https://kostubh.github.io/sarkari_type/" />
     <script>
-      // Redirect to the correct base path for GitHub Pages SPA routing
-      var pathparts = location.pathname.split('/');
-      var i = pathparts.length - 1;
-      while (i >= 0) {
-        if (pathparts[i] === 'sarkari_type') {
-          window.location.replace('/sarkari_type/');
-          break;
-        }
-        i--;
-      }
-      // Fallback redirect
-      if (i < 0) {
-        window.location.replace('/sarkari_type/');
+      // SPA redirect for GitHub Pages
+      // Preserves the path so react-router can handle it
+      var basePath = '/sarkari_type';
+      var path = location.pathname;
+      if (path.startsWith(basePath)) {
+        var route = path.slice(basePath.length);
+        // Store the route in sessionStorage so the app can pick it up
+        sessionStorage.setItem('spa-redirect', route || '/');
+        window.location.replace(basePath + '/?redirect=' + encodeURIComponent(route || '/'));
+      } else {
+        window.location.replace(basePath + '/');
       }
     </script>
   </head>
   <body>
-    <h1>Page Not Found</h1>
-    <p>Redirecting to <a href="/sarkari_type/">SarkariType - Free Typing Test for Government Exams</a>...</p>
+    <p>Redirecting...</p>
   </body>
 </html>

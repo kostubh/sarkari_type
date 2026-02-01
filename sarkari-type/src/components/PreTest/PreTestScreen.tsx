@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useTest } from '../../context/TestContext';
 import { TimeConfig } from './TimeConfig';
 import { TextSourceConfig } from './TextSourceConfig';
@@ -26,6 +27,11 @@ export function PreTestScreen() {
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">SarkariType - Free Typing Test</h1>
           <p className="text-lg text-gray-600">Practice Typing for SSC, CPCT, RRB & Government Exams</p>
+          <nav className="mt-4">
+            <Link to="/exams" className="inline-block bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition shadow-sm">
+              View All Government Exams Requiring Typing Test &rarr;
+            </Link>
+          </nav>
         </header>
 
         {/* Configuration Sections */}
