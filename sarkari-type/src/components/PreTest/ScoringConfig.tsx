@@ -20,6 +20,14 @@ interface ExamPreset {
   };
 }
 
+// Scoring rationale based on official exam error evaluation:
+// SSC uses "Full Mistakes" (1 error) and "Half Mistakes" (0.5 error) system:
+//   Full Mistakes: omission, addition, substitution, spelling errors, incomplete words
+//   Half Mistakes: spacing errors, capitalization, punctuation, transposition
+// Ref: https://ssc.nic.in/Downloads/portal/english/evaluation-dest-tt.pdf
+// CPCT uses NWPM = Gross WPM - (Total Errors / Time in minutes), every error reduces net speed
+// High Courts generally have near-zero tolerance for errors
+
 const EXAM_PRESETS: Record<string, ExamPreset> = {
   custom: {
     name: 'Custom',
@@ -40,16 +48,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'ssc-chsl-english': {
     name: 'SSC CHSL - English Typing',
     nameHi: 'एसएससी सीएचएसएल - अंग्रेजी टाइपिंग',
-    description: '35 WPM, 10 min, max 7% errors (General). LDC/JSA/PA/SA posts.',
+    description: '35 WPM, 10 min, max 7% errors (General). Full Mistake = -10, Half Mistake = -5.',
     duration: 10,
     wordCount: 350,
     timeMode: 'timed',
+    // SSC CHSL: strict 7% error limit. Full mistakes for spelling/missing, half for case/punctuation.
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -2,
+      missingWord: -10,     // Full Mistake: omission/addition
+      incorrectSpelling: -10, // Full Mistake: substitution/spelling
+      punctuationError: -5,  // Half Mistake: punctuation errors
+      caseError: -5,         // Half Mistake: capitalization errors
     },
     officialRef: {
       label: 'SSC CHSL 2024 Notification (ssc.gov.in)',
@@ -59,16 +68,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'ssc-chsl-hindi': {
     name: 'SSC CHSL - Hindi Typing',
     nameHi: 'एसएससी सीएचएसएल - हिंदी टाइपिंग',
-    description: '30 WPM, 10 min, max 7% errors (General). LDC/JSA/PA/SA posts.',
+    description: '30 WPM, 10 min, max 7% errors (General). Full Mistake = -10, Half Mistake = -5.',
     duration: 10,
     wordCount: 300,
     timeMode: 'timed',
+    // Same SSC evaluation rules as English variant
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -2,
+      missingWord: -10,     // Full Mistake
+      incorrectSpelling: -10, // Full Mistake
+      punctuationError: -5,  // Half Mistake
+      caseError: -5,         // Half Mistake (matra/vowel sign errors)
     },
     officialRef: {
       label: 'SSC CHSL 2024 Notification (ssc.gov.in)',
@@ -78,16 +88,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'ssc-cgl-dest': {
     name: 'SSC CGL - DEST (Data Entry)',
     nameHi: 'एसएससी सीजीएल - डेस्ट',
-    description: '2000 key depressions in 15 min, max 20% errors. Tax Assistant/DEO posts.',
+    description: '2000 key depressions in 15 min, max 20% errors (General). Lenient scoring.',
     duration: 15,
     wordCount: 400,
     timeMode: 'timed',
+    // SSC CGL DEST: lenient 20% error limit (25% OBC/EWS, 30% SC/ST). Key depression speed matters more.
     scoring: {
       correctWord: 10,
-      missingWord: -5,
-      incorrectSpelling: -3,
-      punctuationError: -1,
-      caseError: -1,
+      missingWord: -5,      // Lenient: focus is on speed not accuracy
+      incorrectSpelling: -3, // Lenient penalty
+      punctuationError: -1,  // Minimal penalty
+      caseError: -1,         // Minimal penalty
     },
     officialRef: {
       label: 'SSC CGL 2024 Syllabus & DEST Rules (ssc.gov.in)',
@@ -97,16 +108,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'cpct-english': {
     name: 'CPCT - English Typing',
     nameHi: 'सीपीसीटी - अंग्रेजी टाइपिंग',
-    description: '30 NWPM, 15 min. MP Govt jobs. Scorecard valid 2 years.',
+    description: '30 NWPM, 15 min. Every error reduces net speed. NWPM = Gross WPM - (Errors/Time).',
     duration: 15,
     wordCount: 450,
     timeMode: 'timed',
+    // CPCT: each error directly reduces NWPM. All error types equally penalized.
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -2,
+      missingWord: -10,      // Each missing word = 1 full error deducted from NWPM
+      incorrectSpelling: -10, // Each spelling error = 1 full error
+      punctuationError: -10,  // Punctuation errors also counted as full errors in CPCT
+      caseError: -10,         // Case errors also counted as full errors in CPCT
     },
     officialRef: {
       label: 'CPCT Rule Book (cpct.mp.gov.in)',
@@ -116,16 +128,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'cpct-hindi': {
     name: 'CPCT - Hindi Typing',
     nameHi: 'सीपीसीटी - हिंदी टाइपिंग',
-    description: '20 NWPM, 15 min, Remington GAIL layout. MP Govt jobs.',
+    description: '20 NWPM, 15 min, Remington GAIL layout. Every error reduces net speed.',
     duration: 15,
     wordCount: 300,
     timeMode: 'timed',
+    // Same CPCT rules: all errors equally penalized in NWPM calculation
     scoring: {
       correctWord: 10,
       missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -2,
+      incorrectSpelling: -10,
+      punctuationError: -10,
+      caseError: -10,
     },
     officialRef: {
       label: 'CPCT Typing Instructions (cpct.mp.gov.in)',
@@ -135,16 +148,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'rrb-ntpc-english': {
     name: 'RRB NTPC - English Typing',
     nameHi: 'आरआरबी एनटीपीसी - अंग्रेजी टाइपिंग',
-    description: '30 WPM, 10 min. Junior Clerk/Accounts Clerk/CA posts.',
+    description: '30 WPM, 10 min. Moderate error tolerance. Full/half mistake system.',
     duration: 10,
     wordCount: 300,
     timeMode: 'timed',
+    // RRB: similar to SSC full/half mistake system but moderate tolerance
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -2,
-      caseError: -2,
+      missingWord: -8,       // Full Mistake (slightly lenient vs SSC)
+      incorrectSpelling: -8,  // Full Mistake
+      punctuationError: -4,   // Half Mistake
+      caseError: -4,          // Half Mistake
     },
     officialRef: {
       label: 'RRB NTPC CEN 05/2024 CBTST Notice (rrbcdg.gov.in)',
@@ -154,16 +168,16 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'rrb-ntpc-hindi': {
     name: 'RRB NTPC - Hindi Typing',
     nameHi: 'आरआरबी एनटीपीसी - हिंदी टाइपिंग',
-    description: '25 WPM, 10 min, Remington GAIL layout. Railway clerk posts.',
+    description: '25 WPM, 10 min, Remington GAIL layout. Moderate error tolerance.',
     duration: 10,
     wordCount: 250,
     timeMode: 'timed',
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -2,
-      caseError: -2,
+      missingWord: -8,
+      incorrectSpelling: -8,
+      punctuationError: -4,
+      caseError: -4,
     },
     officialRef: {
       label: 'RRB NTPC CEN 05/2024 CBTST Notice (rrbcdg.gov.in)',
@@ -173,16 +187,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'high-court-clerk': {
     name: 'High Court - Clerk (English)',
     nameHi: 'हाई कोर्ट - क्लर्क (अंग्रेजी)',
-    description: '35-40 WPM, 10 min, 400-word passage. Varies by state.',
+    description: '35-40 WPM, 10 min. Very strict: near-zero error tolerance.',
     duration: 10,
     wordCount: 400,
     timeMode: 'timed',
+    // High Courts: extremely strict accuracy requirements. Every error type heavily penalized.
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -3,
+      missingWord: -10,      // Zero tolerance for omissions
+      incorrectSpelling: -10, // Zero tolerance for spelling
+      punctuationError: -8,   // Heavy punctuation penalty
+      caseError: -8,          // Heavy case penalty
     },
     officialRef: {
       label: 'Bombay High Court Recruitment (bombayhighcourt.nic.in)',
@@ -192,16 +207,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'ssc-steno-grade-d': {
     name: 'SSC Stenographer Grade D',
     nameHi: 'एसएससी स्टेनोग्राफर ग्रेड D',
-    description: '80 WPM shorthand, 50 min transcription. ~35 WPM typing speed needed.',
+    description: '80 WPM shorthand, 50 min transcription. SSC full/half mistake rules apply.',
     duration: 10,
     wordCount: 350,
     timeMode: 'timed',
+    // SSC Steno: follows SSC evaluation, transcription accuracy is key
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -2,
+      missingWord: -10,      // Full Mistake
+      incorrectSpelling: -8,  // Full Mistake (slightly lenient for transcription)
+      punctuationError: -5,   // Half Mistake
+      caseError: -3,          // Half Mistake (lower weight for steno)
     },
     officialRef: {
       label: 'SSC Exam Calendar 2025 (ssc.gov.in)',
@@ -211,16 +227,17 @@ const EXAM_PRESETS: Record<string, ExamPreset> = {
   'ssc-steno-grade-c': {
     name: 'SSC Stenographer Grade C',
     nameHi: 'एसएससी स्टेनोग्राफर ग्रेड C',
-    description: '100 WPM shorthand, 40 min transcription. ~40 WPM typing speed needed.',
+    description: '100 WPM shorthand, 40 min transcription. Stricter than Grade D.',
     duration: 10,
     wordCount: 400,
     timeMode: 'timed',
+    // SSC Steno Grade C: stricter than D, higher accuracy expected
     scoring: {
       correctWord: 10,
-      missingWord: -10,
-      incorrectSpelling: -5,
-      punctuationError: -3,
-      caseError: -2,
+      missingWord: -10,      // Full Mistake
+      incorrectSpelling: -10, // Full Mistake (strict for Grade C)
+      punctuationError: -5,   // Half Mistake
+      caseError: -5,          // Half Mistake (stricter than Grade D)
     },
     officialRef: {
       label: 'SSC Exam Calendar 2025 (ssc.gov.in)',
@@ -277,9 +294,12 @@ export function ScoringConfig() {
       if (
         config.duration === preset.duration &&
         config.wordCount === preset.wordCount &&
+        config.timeMode === preset.timeMode &&
         config.scoringOptions.correctWord === preset.scoring.correctWord &&
         config.scoringOptions.missingWord === preset.scoring.missingWord &&
-        config.scoringOptions.incorrectSpelling === preset.scoring.incorrectSpelling
+        config.scoringOptions.incorrectSpelling === preset.scoring.incorrectSpelling &&
+        config.scoringOptions.punctuationError === preset.scoring.punctuationError &&
+        config.scoringOptions.caseError === preset.scoring.caseError
       ) {
         return key;
       }
@@ -330,9 +350,14 @@ export function ScoringConfig() {
               <p className="font-semibold text-blue-900 text-sm">{activePreset.name}</p>
               <p className="text-xs text-blue-700">{activePreset.nameHi}</p>
               <p className="text-sm text-blue-800 mt-1">{activePreset.description}</p>
-              <div className="flex gap-3 mt-2 text-xs text-blue-700">
+              <div className="flex flex-wrap gap-2 mt-2 text-xs text-blue-700">
                 <span className="bg-blue-100 px-2 py-0.5 rounded">Duration: {activePreset.duration} min</span>
                 <span className="bg-blue-100 px-2 py-0.5 rounded">Words: {activePreset.wordCount}</span>
+                <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded">Correct: {activePreset.scoring.correctWord}</span>
+                <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded">Missing: {activePreset.scoring.missingWord}</span>
+                <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded">Spelling: {activePreset.scoring.incorrectSpelling}</span>
+                <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded">Punctuation: {activePreset.scoring.punctuationError}</span>
+                <span className="bg-orange-100 text-orange-800 px-2 py-0.5 rounded">Case: {activePreset.scoring.caseError}</span>
               </div>
             </div>
             {activePreset.officialRef.url && (
