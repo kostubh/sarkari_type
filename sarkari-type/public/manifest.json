@@ -1,0 +1,21 @@
+{
+  "name": "SarkariType - Typing Test for Government Exams",
+  "short_name": "SarkariType",
+  "description": "Free online typing speed test for Indian government exam preparation - SSC, CPCT, RRB & more. Practice with real-time WPM tracking and accuracy analysis.",
+  "start_url": "/sarkari_type/",
+  "scope": "/sarkari_type/",
+  "display": "standalone",
+  "background_color": "#f0f4ff",
+  "theme_color": "#0066cc",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity"],
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "/sarkari_type/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
