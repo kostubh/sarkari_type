@@ -222,7 +222,7 @@ export async function generateAIText(topic: string, wordCount: number = 100): Pr
     }
 
     // Clean and truncate to exact word count
-    const words = generatedText.trim().split(/\s+/).filter(w => w.length > 0);
+    const words = generatedText.trim().split(/\s+/).filter((w: string) => w.length > 0);
     const finalText = words.slice(0, wordCount).join(' ');
     
     return finalText;
@@ -428,7 +428,7 @@ export async function generateCustomPromptText(prompt: string, wordCount: number
     }
 
     // Clean and truncate
-    const words = generatedText.trim().split(/\s+/).filter(w => w.length > 0);
+    const words = generatedText.trim().split(/\s+/).filter((w: string) => w.length > 0);
     return words.slice(0, wordCount).join(' ');
     
   } catch (error) {
