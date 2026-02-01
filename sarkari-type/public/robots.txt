@@ -1,0 +1,7 @@
+# SarkariType - Typing Test for Government Exams
+# https://kostubh.github.io/sarkari_type/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://kostubh.github.io/sarkari_type/sitemap.xml

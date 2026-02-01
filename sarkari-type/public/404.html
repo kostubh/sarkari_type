@@ -1,22 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>SarkariType</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - SarkariType | Free Typing Test for Government Exams</title>
+    <meta name="description" content="The page you're looking for doesn't exist. Visit SarkariType for free typing speed tests designed for SSC, CPCT, RRB & other Indian government exams." />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href="https://kostubh.github.io/sarkari_type/" />
     <script>
-      // Redirect to the correct base path for GitHub Pages
+      // Redirect to the correct base path for GitHub Pages SPA routing
       var pathparts = location.pathname.split('/');
       var i = pathparts.length - 1;
       while (i >= 0) {
-        if (pathparts[i] === 'sarkari-type') {
-          // Redirect to index.html with the correct base path
-          window.location = '/sarkari-type/';
-          return;
+        if (pathparts[i] === 'sarkari_type') {
+          window.location.replace('/sarkari_type/');
+          break;
         }
         i--;
+      }
+      // Fallback redirect
+      if (i < 0) {
+        window.location.replace('/sarkari_type/');
       }
     </script>
   </head>
   <body>
+    <h1>Page Not Found</h1>
+    <p>Redirecting to <a href="/sarkari_type/">SarkariType - Free Typing Test for Government Exams</a>...</p>
   </body>
 </html>
